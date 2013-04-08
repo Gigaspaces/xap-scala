@@ -1,21 +1,22 @@
 package org.openspaces.remoting.scripting
 
-import org.junit.Test
-import org.openspaces.core.GigaSpace
-import org.junit.runner.RunWith
-import org.springframework.test.context.ContextConfiguration
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
-import javax.annotation.Resource
-import com.gigaspaces.annotation.pojo.SpaceId
-import scala.beans.BeanProperty
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.openspaces.core.GigaSpace
 import org.openspaces.scala.common.ScalaDataClass
+import org.springframework.test.context.ContextConfiguration
+import javax.annotation.Resource
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 
+// TODO SCALA SCRIPT add/test validation:
+// 1) wrong script type
 @RunWith(classOf[SpringJUnit4ClassRunner])
 @ContextConfiguration(value = Array("/org/openspaces/remoting/scripting/scala-scripting-context.xml"))
 class ScalaLocalScriptExecutorTest {
 
+  @Resource var scriptingExecutorImpl: DefaultScriptingExecutor = _
   @Resource var asyncScriptingExecutor: ScriptingExecutor[_] = _
   @Resource var executorScriptingExecutor: ScriptingExecutor[_] = _ 
   @Resource var gigaSpace: GigaSpace = _
@@ -43,11 +44,11 @@ class ScalaLocalScriptExecutorTest {
     """
     
     val script = new ScalaTypedStaticScript("name", "scala", userCode)
-      .parameter("foo", "a"*5, classOf[String])
-      .parameter("bar", 3, classOf[Int])
-      .parameter("template", new ScalaDataClass(), classOf[ScalaDataClass])
-      .parameter("arrayOfStrings", Array("one", "two", "three"), classOf[Array[String]])
-      .parameter("setOfInts", Set(1,2,3,4,5), classOf[Set[Int]])
+      .parameter("foo", "a"*5)
+      .parameter("bar", 3)
+      .parameter("template", new ScalaDataClass)
+      .parameter("arrayOfStrings", Array("one", "two", "three"))
+      .parameter("setOfInts", Set(1,2,3,4,5), classOf[Set[_]])
       
     val result = executorScriptingExecutor.execute(script)
     
@@ -62,9 +63,8 @@ class ScalaLocalScriptExecutorTest {
     gigaSpace.write(ScalaDataClass("123123123"))
     
     val script = new ScalaTypedStaticScript("name2", "scala", "gigaSpace.count(null) + foo.size + bar*100")
-      .parameterType("foo", classOf[String])
-      .parameterType("bar", classOf[Int])
       
+    // simply run this many iterations. without caching, this will throw OutOfMemory: PermGen...
     for (i <- 1 to 10000) {
       val rand = (i % 5) + 1
       val result = executorScriptingExecutor.execute(script.parameter("foo", "a"*rand).parameter("bar", rand))
@@ -73,13 +73,26 @@ class ScalaLocalScriptExecutorTest {
     
   }
   
+  // The shared dynamic compilation instance is not thread safe
+  // Without synchonization on it, this test will fail
   @Test
   def scriptConcurrentTest() {
     gigaSpace.write(ScalaDataClass("123123123"))
     val script = new ScalaTypedStaticScript("name3", "scala", "gigaSpace.count(null)")
     val parCalc = (1 to 100).toList.par.map { i =>
-       println(executorScriptingExecutor.execute(script))
+       executorScriptingExecutor.execute(script)
     }
+  }
+  
+  @Test
+  def globalParameterTypesTest() {
+    val jMap = new java.util.HashMap[String, Class[_]]()
+    jMap.put("setType", classOf[Set[_]])
+    scriptingExecutorImpl.setParameterTypes(jMap)
+    val script = new ScalaTypedStaticScript("globalParameterTestScript", "scala", "setType.size")
+        .parameter("setType", Set(1,2,3,4))
+    val result = executorScriptingExecutor.execute(script)
+    Assert.assertEquals(4, result)
   }
   
 }

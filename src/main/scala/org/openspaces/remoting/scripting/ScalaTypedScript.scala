@@ -6,42 +6,50 @@ import java.io.ObjectOutput
 import java.io.ObjectInput
 import java.io.Externalizable
 import scala.collection.JavaConversions.mapAsScalaMap
+import com.gigaspaces.internal.io.IOUtils
+import com.gigaspaces.internal.utils.ObjectUtils
+import com.j_spaces.kernel.ClassLoaderHelper
+import org.openspaces.remoting.RemoteResultReducer
+import scala.annotation.varargs
 
-trait ScalaTypedScript[T <: Script] extends TypedScript {
+trait ScalaTypedScript extends TypedScript with Externalizable {
   
-  self: T =>
-  
-  @BeanProperty var parameterTypes: JMap[String, Class[_]] = _
+  @BeanProperty val parameterTypes: JMap[String, Class[_]] = new java.util.HashMap[String, Class[_]]()
 
-  def parameterType(name: String, staticType: Class[_]): T = {
-    if (parameterTypes eq null) {
-      parameterTypes = new java.util.HashMap[String, Class[_]]()
-    }
-    parameterTypes.put(name, staticType)
-    this
+  def parameterType(name: String, staticType: Class[_]): this.type = { parameterTypes.put(name, staticType); this }
+  
+  abstract override def writeExternal(out: ObjectOutput) {
+    super.writeExternal(out)
+    writeParameterTypesMap(out)
   }
-  
-  def writeParameterTypesMap(out: ObjectOutput) {
+  abstract override def readExternal(in: ObjectInput) {
+    super.readExternal(in)
+    readParameterTypesMap(in)
+  }
+  protected def writeParameterTypesMap(out: ObjectOutput) {
     if (parameterTypes eq null) {
       out.writeBoolean(false)
     } else {
       out.writeBoolean(true)
       out.writeShort(parameterTypes.size)
-      parameterTypes.foreach { case(key, value) =>
-        out.writeUTF(key)
-        out.writeObject(value)
+      parameterTypes.foreach { case(paramName, paramType) =>
+        IOUtils.writeString(out, paramName)
+        IOUtils.writeString(out, paramType.getName())
       }
     }
   }
-  
-  def readParameterTypesMap(in: ObjectInput) {
+  protected def readParameterTypesMap(in: ObjectInput) {
     if (in.readBoolean()) {
       val size = in.readShort()
-      parameterTypes = new java.util.HashMap[String, Class[_]]()
       for (i <- 0 until size) {
-        val key = in.readUTF()
-        val value = in.readObject().asInstanceOf[Class[_]]
-        parameterTypes.put(key, value)
+        val paramName = IOUtils.readString(in)
+        val paramTypeName = IOUtils.readString(in)
+        val paramType = 
+          if (ObjectUtils.isPrimitive(paramTypeName)) 
+            ObjectUtils.getPrimitive(paramTypeName)
+          else
+            ClassLoaderHelper.loadClass(paramTypeName, false /* localOnly */);
+        parameterTypes.put(paramName, paramType)
       }
     }
   }
@@ -50,64 +58,59 @@ trait ScalaTypedScript[T <: Script] extends TypedScript {
 
 class ScalaTypedStaticScript(name: String, scriptType: String, code: String) 
   extends StaticScript(name, scriptType, code)
-  with ScalaTypedScript[ScalaTypedStaticScript] {
+  with ScalaTypedScript {
+
+  def this() = this(null, null, null)
+  
+  override def parameter(name: String, value: Any) = { super.parameter(name, value); this }
+  override def name(name: String) = { super.name(name); this }
+  override def script(script: String) = { super.script(script); this }
+  override def `type`(`type`: String) = { super.`type`(`type`); this }
+  override def cache(shouldCache: Boolean) = { super.cache(shouldCache); this }
+  override def routing(routing: Any) = { super.routing(routing); this }
+  override def broadcast[T, Y](reducer: RemoteResultReducer[T, Y]) = { super.broadcast(reducer); this }
   
   def parameter(name: String, value: Any, staticType: Class[_]) = {
     super.parameter(name, value)
     parameterType(name, staticType)
   }
-  
-  override def writeExternal(out: ObjectOutput) {
-    super.writeExternal(out)
-    writeParameterTypesMap(out)
-  }
-
-  override def readExternal(in: ObjectInput) {
-    super.readExternal(in)
-    readParameterTypesMap(in)
-  }
-  
 }
 
 class ScalaTypedStaticResourceScript(name: String, scriptType: String, resourceLocation: String) 
   extends StaticResourceScript(name, scriptType, resourceLocation)
-  with ScalaTypedScript[ScalaTypedStaticResourceScript] {
+  with ScalaTypedScript {
+  
+  override def parameter(name: String, value: Any) = { super.parameter(name, value); this }
+  override def name(name: String) = { super.name(name); this }
+  override def script(script: String) = { super.script(script); this }
+  override def `type`(`type`: String) = { super.`type`(`type`); this }
+  override def cache(shouldCache: Boolean) = { super.cache(shouldCache); this }
+  override def routing(routing: Any) = { super.routing(routing); this }
+  override def broadcast[T, Y](reducer: RemoteResultReducer[T, Y]) = { super.broadcast(reducer); this }
   
   def parameter(name: String, value: Any, staticType: Class[_]) = {
     super.parameter(name, value)
     parameterType(name, staticType)
   }
-  
-    override def writeExternal(out: ObjectOutput) {
-    super.writeExternal(out)
-    writeParameterTypesMap(out)
-  }
-
-  override def readExternal(in: ObjectInput) {
-    super.readExternal(in)
-    readParameterTypesMap(in)
-  }
-  
 }
 
 class ScalaTypedResourceLazyLoadingScript(name: String, scriptType: String, resourceLocation: String) 
   extends ResourceLazyLoadingScript(name, scriptType, resourceLocation)
-  with ScalaTypedScript[ScalaTypedResourceLazyLoadingScript] {
+  with ScalaTypedScript {
   
-  def parameter(name: String, value: Any, staticType: Class[_]) = {
+  def this() = this(null, null, null)
+  
+  override def parameter(name: String, value: Any) = { super.parameter(name, value); this }
+  override def name(name: String) = { super.name(name); this }
+  override def script(script: String) = { super.script(script); this }
+  override def `type`(`type`: String) = { super.`type`(`type`); this }
+  override def cache(shouldCache: Boolean) = { super.cache(shouldCache); this }
+  override def routing(routing: Any) = { super.routing(routing); this }
+  override def broadcast[T, Y](reducer: RemoteResultReducer[T, Y]) = { super.broadcast(reducer); this }
+  
+  def parameter(name: String, value: Any, staticType: Class[_]) = { 
     super.parameter(name, value)
     parameterType(name, staticType)
   }
-  
-  override def writeExternal(out: ObjectOutput) {
-    super.writeExternal(out)
-    writeParameterTypesMap(out)
-  }
-
-  override def readExternal(in: ObjectInput) {
-    super.readExternal(in)
-    readParameterTypesMap(in)
-  }
-  
 }
 

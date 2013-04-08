@@ -1,18 +1,27 @@
 package org.openspaces.scala.core
 
+import java.io.Serializable
+
 import org.openspaces.core.GigaSpace
 import org.openspaces.core.executor.DistributedTask
-import org.openspaces.core.executor.TaskGigaSpaceAware
-import com.gigaspaces.async.AsyncResult
 import org.openspaces.core.executor.Task
+import org.openspaces.core.executor.TaskGigaSpaceAware
+
 import com.gigaspaces.async.AsyncFuture
 import com.gigaspaces.async.AsyncFutureListener
+import com.gigaspaces.async.AsyncResult
 
 object ScalaGigaSpacesImplicits {
 
+  implicit class ScalaAsyncFutureListener[T](asyncFutureListener: AsyncResult[T] => Unit) 
+    extends AsyncFutureListener[T] {
+    override def onResult(result: AsyncResult[T]) {
+      asyncFutureListener(result)
+    }
+  }
+  
   implicit class ScalaEnhancedGigaSpaceWrapper(val gigaSpace: GigaSpace) {
     
-    // execute
     def execute[T <: Serializable, R](
       mapper: GigaSpace => T,
       reducer: Seq[AsyncResult[T]] => R): AsyncFuture[R] = {
@@ -69,15 +78,6 @@ class ScalaDistributedTask[T <: Serializable, R](
   
   override def reduce(results: java.util.List[AsyncResult[T]]): R = 
     reducer(scala.collection.JavaConversions.asScalaBuffer(results))
-  
-}
-
-class ScalaAsyncFutureListener[T <: Serializable](asyncFutureListener: AsyncResult[T] => Unit) 
-  extends AsyncFutureListener[T] {
-  
-  override def onResult(result: AsyncResult[T]) {
-    asyncFutureListener(result)
-  }
   
 }
 

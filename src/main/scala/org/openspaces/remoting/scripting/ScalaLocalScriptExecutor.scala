@@ -18,25 +18,22 @@ class ScalaLocalScriptExecutor extends AbstractLocalScriptExecutor[java.util.Map
   
   protected def doCompile(script: Script): JMap[String, Object] => Object = {
     try {
-      
-        if (!script.isInstanceOf[ScalaTypedScript[_]]) {
+        if (!script.isInstanceOf[ScalaTypedScript]) {
           throw new IllegalArgumentException("script must be a typed scala script")
         }
-        
-        val typedScript = script.asInstanceOf[ScalaTypedScript[_]]
-        
+        val typedScript = script.asInstanceOf[ScalaTypedScript]
         val paramTypes = typedScript.getParameterTypes()
-        
         if (paramTypes eq null) {
           throw new IllegalArgumentException("typed scala script must be configured with static binding types")
         }
         
         val wrappedUserCode = ScalaLocalScriptExecutor.wrapUserCode(typedScript.getScriptAsString(), paramTypes)
 
+        // The toolbox is not thread safe
         toolBoxLock.synchronized {
-            val parsedTree = toolbox.parse(wrappedUserCode)
-            val compiledScriptHolder = toolbox.compile(parsedTree)
-            compiledScriptHolder().asInstanceOf[JMap[String, Object] => Object]
+          val parsedTree = toolbox.parse(wrappedUserCode)
+          val compiledScriptHolder = toolbox.compile(parsedTree)
+          compiledScriptHolder().asInstanceOf[JMap[String, Object] => Object]
         }
         
     } catch {
@@ -57,7 +54,6 @@ class ScalaLocalScriptExecutor extends AbstractLocalScriptExecutor[java.util.Map
   }
   
   def close(compiledScript: JMap[String,Object] => Object) = Unit
-  
   def isThreadSafe(): Boolean = false
   
 }
