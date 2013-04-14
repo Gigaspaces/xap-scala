@@ -1,44 +1,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>com.gigaspaces</groupId>
-  <artifactId>gs-openspaces-scala-macro-test</artifactId>
-  <version>9.6.0-SNAPSHOT</version>
-  <name>${project.artifcatId}</name>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>gs-openspaces-scala-macro-test</artifactId>
+    <name>${project.artifactId}</name>
   
-  	<properties>
-		<maven.compiler.source>1.6</maven.compiler.source>
-		<maven.compiler.target>1.6</maven.compiler.target>
-		<encoding>UTF-8</encoding>
-		<gsVersion>${project.version}</gsVersion>
-		<scalaVersion>2.10.0</scalaVersion>
-		<junitVersion>4.8.2</junitVersion>
-		<springVersion>3.1.3.RELEASE</springVersion>
-	</properties>
-	
-		<repositories>
-		<repository>
-			<id>scala-tools.org</id>
-			<name>Scala-Tools Maven2 Repository</name>
-			<url>http://oss.sonatype.org/content/groups/scala-tools</url>
-		</repository>
-		
-		<repository>
-			<id>org.openspaces</id>
-			<name>OpenSpaces</name>
-			<url>http://maven-repository.openspaces.org</url>
-		</repository>
-		
-	</repositories>
-	
-	<pluginRepositories>
-		<pluginRepository>
-			<id>scala-tools.org</id>
-			<name>Scala-Tools Maven2 Repository</name>
-			<url>http://oss.sonatype.org/content/groups/scala-tools</url>
-		</pluginRepository>
-	</pluginRepositories>
-	
-		<dependencies>
+  	<parent>
+		<groupId>com.gigaspaces</groupId>
+		<artifactId>gs-openspaces-scala-parent</artifactId>
+		<version>9.6.0-SNAPSHOT</version>
+		<relativePath>..</relativePath>
+	</parent>
+  
+	<dependencies>
 	
 		<dependency>
 			<groupId>com.gigaspaces</groupId>
@@ -81,20 +53,6 @@
 			<version>1.8.4</version>
 		</dependency>
 		
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-test</artifactId>
-			<version>${springVersion}</version>
-			<scope>test</scope>
-		</dependency>
-		
-		<dependency>
-			<groupId>serviceui</groupId>
-			<artifactId>serviceui</artifactId>
-			<version>1.1a</version>
-			<scope>test</scope>
-		</dependency>
-		
 	</dependencies>
 
 	<build>
@@ -108,7 +66,7 @@
 				<executions>
 					<execution>
 						<goals>
-							<goal>compile</goal>
+							<!--<goal>compile</goal>-->
 							<goal>testCompile</goal>
 						</goals>
 						<configuration>
@@ -133,7 +91,7 @@
 					<execution>
 						<id>default-jar</id>
 						<goals>
-							<goal>jar</goal>
+							<goal>test-jar</goal>
 						</goals>
 						<phase>package</phase>
 						<configuration>
