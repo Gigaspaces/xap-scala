@@ -16,7 +16,11 @@ import com.gigaspaces.async.AsyncFutureListener
 import org.junit.Test
 import java.util.Date
 
-case class Person(name: String, age: Int, son: Person, birthday: Date)
+case class Person(name: String = null, 
+                  age: Int = 0, 
+                  son: Person = null, 
+                  birthday: Date = null, 
+                  originalQuery: SQLQuery[Person] = null)
 
 class GigaSpaceMacrosApiTest {
 

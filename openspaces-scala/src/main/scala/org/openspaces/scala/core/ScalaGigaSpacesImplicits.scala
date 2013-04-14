@@ -77,6 +77,17 @@ object ScalaGigaSpacesImplicits {
   
 }
 
+object MacroDirectives {
+  def select(properties: Any*): Unit = ???
+  def orderBy(properties: Any*): OrderByDirection = ???
+  def groupBy(properties: Any*): Unit = ???
+  
+  trait OrderByDirection {
+    val ascending: Unit
+    val descending: Unit
+  }
+}
+
 class GigaSpaceMacroPredicateWrapper(val gigaSpace: GigaSpace) {
   
   def read[T](predicate: T => Boolean): T = 

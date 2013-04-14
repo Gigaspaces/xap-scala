@@ -130,6 +130,12 @@ abstract class GigaSpaceMacroHelper {
   val c: GigaSpaceMacros.TypedContext
   import c.universe._
   
+  private val selectDirective = "select"
+  private val groupByDirective = "groupBy"
+  private val orderByDirective = "orderBy"
+  private val orderByAscendingDirective = "ascending"
+  private val orderByDescendingDirective = "descending"
+    
   private val eqOp = "is"
   private val neOp = "is NOT"
   private val likeOp = "like"
@@ -145,29 +151,101 @@ abstract class GigaSpaceMacroHelper {
   protected def getInvocationMethodName: String
   
   def generate[T](predicate: c.Expr[T => Boolean]): c.Tree = {
-
     val (paramName, typeName, body) = extractParameterNameTypeNameAndApplyTree(predicate)
-    
-//    c.echo(null, "0: " + showRaw(apply))
-//    c.echo(null, "1: " + showRaw(sqlQueryTree))
-//    c.echo(null, "2: " + sqlQueryTree.toString)
-
     body match {
       case Block(statements, rawExpression) => {
-        processExpression(paramName, typeName, rawExpression)
+        val (selectProperties, orderByProperties, orderByDirection, groupByProperties) = 
+          processStatements(statements, paramName.encoded)
+        processExpression(paramName, 
+                          typeName, 
+                          rawExpression, 
+                          selectProperties, 
+                          orderByProperties, 
+                          orderByDirection,
+                          groupByProperties)
       }
       case _ => processExpression(paramName, typeName, body) 
     }
-    
- }
+  }
  
-  private def processExpression[T](paramName: TermName, typeName: String, rawExpression: Tree) = {
+  private def processStatements(statements: List[Tree], paramName: String) = {
+    
+    var selectProperties: List[String] = null
+    var orderByProperties: List[String] = null
+    var orderByDirection: String = null
+    var groupByProperties: List[String] = null
+    
+    
+    statements map(removeFullyQualifiedPackageNames) foreach { _ match {
+      case Select(Apply(Ident(directive), params), subDirective) 
+        if directive.encoded == orderByDirective => {
+        if (orderByProperties != null) {
+          c.abort(c.enclosingPosition, "cannot place more then 1 orderBy directive")
+        }
+        val orderByDirectionOption = convertToOrderByDirection(subDirective)
+        if (orderByDirectionOption.isEmpty) {
+          c.abort(c.enclosingPosition, "Illegal orderBy direction: " + subDirective)
+        }
+        orderByDirection = orderByDirectionOption.get
+        orderByProperties = extractDirectivePropertyNames(params, paramName, orderByDirective)
+      }
+      case Apply(Ident(directive), params) => {
+        if (directive.encoded == selectDirective) {
+          if (selectProperties != null) {
+            c.abort(c.enclosingPosition, "cannot place more then 1 select directive")
+          }
+          selectProperties = extractDirectivePropertyNames(params, paramName, selectDirective)
+        } else if (directive.encoded == orderByDirective) {
+          if (orderByProperties != null) {
+            c.abort(c.enclosingPosition, "cannot place more then 1 orderBy directive")
+          }
+          orderByProperties = extractDirectivePropertyNames(params, paramName, orderByDirective)
+        } else if (directive.encoded == groupByDirective) {
+          if (groupByProperties != null) {
+            c.abort(c.enclosingPosition, "cannot place more then 1 groupBy directive")
+          }
+          groupByProperties = extractDirectivePropertyNames(params, paramName, groupByDirective)
+        } else {
+          c.abort(c.enclosingPosition, "unknown directive: " + directive)
+        }
+      }
+      case other => c.abort(c.enclosingPosition, "bad statement: " + showRaw(other))
+    }}
+    
+    (selectProperties, orderByProperties, orderByDirection, groupByProperties)
+  }
+  
+  private def extractDirectivePropertyNames(params: List[Tree], paramName: String, directive: String) = {
+    if (params.isEmpty) {
+      c.abort(c.enclosingPosition, "cannot pass zero arguments to " + directive + " directive")
+    }
+    params.map { param =>
+      val paramString = param.toString
+      if (!paramString.startsWith(paramName + ".")) {
+        throw new Exception(s"parameter name must begin with '$paramName' reason: ${paramString}")
+      } else {
+          paramString.substring(paramName.length + 1)
+      }
+    }
+  }
+  
+  private def processExpression[T](
+      paramName: TermName, 
+      typeName: String, 
+      rawExpression: Tree,
+      selectProperties: List[String] = null,
+      orderByProperties: List[String] = null,
+      orderByDirection: String = null,
+      groupByProperties: List[String] = null) = {
 
-    val expression = removeImplicitCalls(rawExpression)
+    val expression = removeFullyQualifiedPackageNames(rawExpression)
 
     // build query and parameter list to build new SQLQuery
     val paramsBuffer = collection.mutable.ArrayBuffer[Tree]()
-    val query: String = visitExpressionTree(true, paramName.decoded, expression, paramsBuffer).query
+    val query: String = {
+      val initialQuery = visitExpressionTree(true, paramName.decoded, expression, paramsBuffer).query
+      addDirectivesToQueryIfNeeded(initialQuery, orderByProperties, orderByDirection, groupByProperties)
+    }
     val params = paramsBuffer.map(box) toList
     
     // build String trees for type name and query
@@ -175,8 +253,17 @@ abstract class GigaSpaceMacroHelper {
     val queryStringTree = toStringTree(query)
 
     // build 'new SQLQuery(...)' tree
-    val sqlQueryExpr = createPartialSqlQueryTree(typeNameStringTree, queryStringTree)
-    val sqlQueryTree = addParametersToSqlQueryTreeAndFixGenericType(sqlQueryExpr.tree, params, typeName)
+    val sqlQueryExpr = createPartialSqlQueryTree(typeNameStringTree, 
+                                                 queryStringTree, 
+                                                 setProjections = selectProperties != null)
+    val sqlQueryTree = createFinalSQLQuery(sqlQueryExpr.tree, 
+                                           params, 
+                                           typeName,
+                                           selectProperties)
+    
+//        c.echo(null, "0: " + showRaw(apply))
+//    c.echo(null, "1: " + showRaw(sqlQueryTree))
+//    c.echo(null, "2: " + sqlQueryTree.toString)
     
     // build the operation invocation tree and pass the new sqlQueryExpr
     // gigaSpace.read(new SQLQuery(typeName, query, QueryResultType.OBJECT, param1, param2, ..., paramN))
@@ -189,27 +276,20 @@ abstract class GigaSpaceMacroHelper {
     (paramName, tpe.toString, body)
   }
   
-  private def removeImplicitCalls(apply: c.Tree): c.Tree = {
+  private def removeFullyQualifiedPackageNames(apply: c.Tree): c.Tree = {
     val implicitRemoverTransformer = new Transformer {
       override val treeCopy = newStrictTreeCopier
       override def transform(t: Tree) = {
         super.transform(t) match {
+          // for directives in statements 
+          case Apply(Select(Select(_, macroDirectiveNameTypeName), directive), params) 
+            if macroDirectiveNameTypeName.decoded == "MacroDirectives" => {
+              Apply(Ident(directive), params)
+          }
           // for implicits in final final expression
-          case Apply(Select(Apply(
-            Select(
-              Select(
-                Select(
-                  Select(
-                    Select(
-                      Ident(org), 
-                      org_openspaces), 
-                    org_openspaces_scala), 
-                  org_openspaces_scala_core), 
-                org_openspaces_scala_core_ScalaGigaSpacesImplicits), 
-              _),
-            lhs::Nil), operator), rhs::Nil) if 
-              org_openspaces_scala_core_ScalaGigaSpacesImplicits.decoded == "ScalaGigaSpacesImplicits" => {
-            Apply(Select(lhs, operator), rhs::Nil)
+          case Apply(Select(Apply(Select(Select(_,gigaSpaceImplicitsTypeName), _), lhs::Nil), operator), rhs::Nil) 
+            if gigaSpaceImplicitsTypeName.decoded == "ScalaGigaSpacesImplicits" => {
+              Apply(Select(lhs, operator), rhs::Nil)
           }
           case other => other
         }
@@ -220,21 +300,55 @@ abstract class GigaSpaceMacroHelper {
   
   private def toStringTree(string: String): c.Tree = c.literal(string).tree
   
-  private def createPartialSqlQueryTree(typeNameStringTree: c.Tree, queryStringTree: c.Tree) = {
-    reify { 
-      new SQLQuery[AnyRef](
-        c.Expr[String](typeNameStringTree).splice, 
-        c.Expr[String](queryStringTree).splice, 
-        com.gigaspaces.query.QueryResultType.OBJECT, 
-        "###PLACEHOLDER###"
-      )
+  private def createPartialSqlQueryTree(
+      typeNameStringTree: c.Tree, 
+      queryStringTree: c.Tree,
+      setProjections: Boolean) = {
+    if (setProjections) {
+      reify { 
+        new SQLQuery[AnyRef](
+          c.Expr[String](typeNameStringTree).splice, 
+          c.Expr[String](queryStringTree).splice, 
+          com.gigaspaces.query.QueryResultType.OBJECT, 
+          "###PLACEHOLDER###"
+        ).setProjections(null)
+      }      
+    } else {
+      reify { 
+        new SQLQuery[AnyRef](
+          c.Expr[String](typeNameStringTree).splice, 
+          c.Expr[String](queryStringTree).splice, 
+          com.gigaspaces.query.QueryResultType.OBJECT, 
+          "###PLACEHOLDER###"
+        )
+      }       
     }
+    
+
   }
   
-  private def addParametersToSqlQueryTreeAndFixGenericType(
+  private def addDirectivesToQueryIfNeeded(query: String,
+                                           orderByProperties: List[String],
+                                           orderByDirection: String,
+                                           groupByProperties: List[String]): String = {
+    val finalQuery = new StringBuilder(query)
+    if (groupByProperties != null) {
+      finalQuery.append(" GROUP BY ").append(groupByProperties.mkString(","))
+    }
+    if (orderByProperties != null) {
+      finalQuery.append(" ORDER BY ").append(orderByProperties.mkString(","))
+      if (orderByDirection != null) {
+        finalQuery.append(" ").append(orderByDirection)
+      }
+    }
+    finalQuery.toString
+  }
+  
+  private def createFinalSQLQuery(
       partialSqlQueryTree: c.Tree, 
       params: List[c.Tree], 
-      typeName: String): c.Tree = {
+      typeName: String,
+      selectParams: List[String]): c.Tree = {
     val sqlQueryTransformer = new Transformer {
       override val treeCopy = newStrictTreeCopier
       override def transform(t: Tree) = {
@@ -245,7 +359,11 @@ abstract class GigaSpaceMacroHelper {
           case Ident(name) if name.decoded == "AnyRef" => {
             createTreeFromTypeName(typeName)
           }
-
+          case Apply(Select(select, methodCall), Literal(Constant(null))::Nil) 
+            if methodCall.encoded == "setProjections" => {
+            val selectParamsTree = selectParams map { selectParam => c.literal(selectParam).tree }
+            Apply(Select(select, methodCall), selectParamsTree)
+          }
           case other => other
         }
       }
@@ -331,8 +449,6 @@ abstract class GigaSpaceMacroHelper {
     }
   }
   
-
-  
   private def buildStringFromVisitResult(visitResult: VisitResult): String = {
     var result = visitResult.query
     if (!visitResult.isLeaf)
@@ -365,4 +481,12 @@ abstract class GigaSpaceMacroHelper {
     }
   }
  
+  private def convertToOrderByDirection(orderByDirective: Name): Option[String] = {
+    orderByDirective.toString match {
+      case `orderByAscendingDirective`  => Some("ASC")
+      case `orderByDescendingDirective` => Some("DESC")
+      case _                            => None
+    }
+  }
+  
 }
