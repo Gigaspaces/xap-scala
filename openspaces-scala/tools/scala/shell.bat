@@ -1,6 +1,6 @@
 @call "%~dp0\..\..\bin\setenv.bat"
 
-set SCALA_ROOT=d:\home\bin\scala-2.10.0
+set SCALA_ROOT= @rem Path to scala installation root
 set SCALA_JARS=%SCALA_ROOT%\lib\*
 set GS_SCALA_JARS=%JSHOMEDIR%\lib\platform\scala\*
 set REPL_CLASSPATH=-cp %GS_JARS%;%SPRING_JARS%;%SIGAR_JARS%;%SCALA_JARS%;%GS_SCALA_JARS%

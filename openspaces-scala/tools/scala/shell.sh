@@ -1,7 +1,7 @@
 export JSHOMEDIR=`dirname $0`/../..
 . `dirname $0`/../../bin/setenv.sh
 
-SCALA_ROOT="/export/users/dank/bin/scala/scala-2.10.0"
+SCALA_ROOT= # Path to scala installation root
 SCALA_JARS="$SCALA_ROOT/lib/*"
 GS_SCALA_JARS="$JSHOMEDIR/lib/platform/scala/*"
 REPL_CLASSPATH="-cp $GS_JARS:$SPRING_JARS:$SIGAR_JARS:$SCALA_JARS:$GS_SCALA_JARS"
