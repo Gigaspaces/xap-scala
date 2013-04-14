@@ -187,7 +187,7 @@ object GigaSpaceMacros {
   }
 
   def clear_impl[T](c1: TypedContext)
-    (predicate: c1.Expr[T => Boolean]): c1.Expr[Int] = {
+    (predicate: c1.Expr[T => Boolean]): c1.Expr[Unit] = {
     val helper = new CountClearMacroHelper { 
       override val c: c1.type = c1
       override val clear = true

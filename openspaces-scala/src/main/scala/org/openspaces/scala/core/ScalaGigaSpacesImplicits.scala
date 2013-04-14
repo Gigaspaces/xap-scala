@@ -121,7 +121,7 @@ class GigaSpaceMacroPredicateWrapper(val gigaSpace: GigaSpace) {
   def count[T](predicate: T => Boolean, modifiers: CountModifiers): Int =
     macro GigaSpaceMacros.countWithModifiers_impl[T]
 
-  def clear[T](predicate: T => Boolean): Int =
+  def clear[T](predicate: T => Boolean): Unit =
     macro GigaSpaceMacros.clear_impl[T]
   
   def clear[T](predicate: T => Boolean, modifiers: ClearModifiers): Int =
