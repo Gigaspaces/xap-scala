@@ -12,7 +12,7 @@
 		<maven.compiler.target>1.6</maven.compiler.target>
 		<encoding>UTF-8</encoding>
 		<gsVersion>${project.version}</gsVersion>
-		<scalaVersion>2.10.0</scalaVersion>
+		<scalaVersion>2.10.1</scalaVersion>
 		<junitVersion>4.8.2</junitVersion>
 		<springVersion>3.1.3.RELEASE</springVersion>
 	</properties>

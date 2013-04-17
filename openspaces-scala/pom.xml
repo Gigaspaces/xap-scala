@@ -3,23 +3,23 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>gs-openspaces-scala</artifactId>
 	<name>${project.artifactId}</name>
-	
+
 	<parent>
 		<groupId>com.gigaspaces</groupId>
 		<artifactId>gs-openspaces-scala-parent</artifactId>
 		<version>9.6.0-SNAPSHOT</version>
 		<relativePath>..</relativePath>
 	</parent>
-	
+
 	<dependencies>
-	
+
 		<dependency>
 			<groupId>com.gigaspaces</groupId>
 			<artifactId>gs-openspaces</artifactId>
 			<version>${gsVersion}</version>
 			<scope>provided</scope>
 		</dependency>
-	
+
 		<dependency>
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-library</artifactId>
@@ -40,27 +40,46 @@
 			<version>${junitVersion}</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
 			<version>${springVersion}</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>serviceui</groupId>
 			<artifactId>serviceui</artifactId>
 			<version>1.1a</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 	</dependencies>
 
 	<build>
 		<sourceDirectory>src/main/scala</sourceDirectory>
 		<testSourceDirectory>src/test/scala</testSourceDirectory>
 		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>1.4</version>
+				<executions>
+					<execution>
+						<id>add-java-source</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>add-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>${basedir}/src/main/java</source>
+							</sources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>net.alchim31.maven</groupId>
 				<artifactId>scala-maven-plugin</artifactId>
@@ -73,10 +92,7 @@
 						</goals>
 						<configuration>
 							<args>
-							<!--
-								<arg>-Xlog-free-terms</arg>
-								<arg>-Ymacro-debug-lite</arg>
-							-->
+								<!-- <arg>-Xlog-free-terms</arg> <arg>-Ymacro-debug-lite</arg> -->
 								<arg>-make:transitive</arg>
 								<arg>-dependencyfile</arg>
 								<arg>${project.build.directory}/.scala_dependencies</arg>

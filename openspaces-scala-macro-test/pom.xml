@@ -23,7 +23,7 @@
 			<groupId>com.gigaspaces</groupId>
 			<artifactId>gs-openspaces-scala</artifactId>
 			<version>${gsVersion}</version>
-			<scope>provided</scope>
+			<scope>test</scope>
 		</dependency>
 	
 		<dependency>

@@ -4,6 +4,7 @@ import scala.beans.BeanProperty
 import org.openspaces.scala.core.aliases.annotation._
 import com.gigaspaces.annotation.pojo.SpaceClass
 import com.gigaspaces.annotation.pojo.SpaceClass.IncludeProperties
+import com.gigaspaces.annotation.pojo.SpaceClassConstructor
 
 case class ScalaDataClass(@SpaceId @BeanProperty var id: String) extends Serializable {
   def this() = this(null)
@@ -30,8 +31,12 @@ class ScalaDataClass3(@SpaceId id: String, name: String) extends Serializable {
   
 }
 
-@SpaceClass(includeProperties = IncludeProperties.CONSTRUCTOR)
-case class ScalaImmutableDataClass1(
+case class ScalaDataClass4(@SpaceId @BeanProperty var id: String,
+                           @BeanProperty var name: String) extends Serializable {
+  def this() = this(null, null)
+}
+
+case class ScalaImmutableDataClass1 @SpaceClassConstructor() (
   
   @BeanProperty
   @SpaceId 
@@ -42,8 +47,7 @@ case class ScalaImmutableDataClass1(
   
 )
 
-@SpaceClass(includeProperties = IncludeProperties.CONSTRUCTOR)
-case class ScalaImmutableDataClassDefaultValues(
+case class ScalaImmutableDataClassDefaultValues @SpaceClassConstructor()(
   
   @BeanProperty
   @SpaceId
@@ -54,8 +58,7 @@ case class ScalaImmutableDataClassDefaultValues(
   
 )
 
-@SpaceClass(includeProperties = IncludeProperties.CONSTRUCTOR)
-case class ScalaImmutableDataClassNullValues(
+case class ScalaImmutableDataClassNullValues @SpaceClassConstructor()(
     
   @BeanProperty
   @SpaceId
@@ -67,8 +70,7 @@ case class ScalaImmutableDataClassNullValues(
                                                 
 )
 
-@SpaceClass(includeProperties = IncludeProperties.CONSTRUCTOR)
-case class ScalaImmutableDataClassExcludedProperties(
+case class ScalaImmutableDataClassExcludedProperties @SpaceClassConstructor()(
                                              
   @BeanProperty
   @SpaceId
@@ -85,10 +87,9 @@ case class ScalaImmutableDataClassExcludedProperties(
   @SpaceExclude
   excludedString: String = "hurray!"
                                              
-)
+) 
 
-@SpaceClass(includeProperties = IncludeProperties.CONSTRUCTOR)
-class ScalaImmutableDataClassInheritanceParent(
+class ScalaImmutableDataClassInheritanceParent @SpaceClassConstructor()(
 
   @BeanProperty
   @SpaceId
@@ -99,8 +100,7 @@ class ScalaImmutableDataClassInheritanceParent(
   
 ) 
 
-@SpaceClass(includeProperties = IncludeProperties.CONSTRUCTOR)
-case class ScalaImmutableDataClassInheritanceChild1(
+case class ScalaImmutableDataClassInheritanceChild1 @SpaceClassConstructor()(
   override val id: String = null,
   override val name: String = null
 ) extends ScalaImmutableDataClassInheritanceParent(id, name) 

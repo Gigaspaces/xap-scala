@@ -125,6 +125,15 @@ abstract class AsyncChangeMacroHelper[T] extends GigaSpaceMacroHelper {
   override protected def getInvocationMethodName: String = "asyncChange"
 }
 
+object GigaSpaceMacroHelper {
+  def createQuery[T](typeName: String, query: String, params: List[Object]) = {
+    SQLQueryMacroHelper.newQuery[T](typeName, 
+                                    query, 
+                                    com.gigaspaces.query.QueryResultType.OBJECT, 
+                                    params.toArray[Object])
+  }
+}
+
 abstract class GigaSpaceMacroHelper {
   
   val c: GigaSpaceMacros.TypedContext
@@ -151,6 +160,7 @@ abstract class GigaSpaceMacroHelper {
   protected def getInvocationMethodName: String
   
   def generate[T](predicate: c.Expr[T => Boolean]): c.Tree = {
+    
     val (paramName, typeName, body) = extractParameterNameTypeNameAndApplyTree(predicate)
     body match {
       case Block(statements, rawExpression) => {
@@ -306,20 +316,18 @@ abstract class GigaSpaceMacroHelper {
       setProjections: Boolean) = {
     if (setProjections) {
       reify { 
-        new SQLQuery[AnyRef](
+        GigaSpaceMacroHelper.createQuery[AnyRef](
           c.Expr[String](typeNameStringTree).splice, 
           c.Expr[String](queryStringTree).splice, 
-          com.gigaspaces.query.QueryResultType.OBJECT, 
-          "###PLACEHOLDER###"
+          List[Object]("#PLACEHOLDER#")
         ).setProjections(null)
       }      
     } else {
       reify { 
-        new SQLQuery[AnyRef](
+        GigaSpaceMacroHelper.createQuery[AnyRef](
           c.Expr[String](typeNameStringTree).splice, 
           c.Expr[String](queryStringTree).splice, 
-          com.gigaspaces.query.QueryResultType.OBJECT, 
-          "###PLACEHOLDER###"
+          List[Object]("#PLACEHOLDER#")
         )
       }       
     }
@@ -353,8 +361,10 @@ abstract class GigaSpaceMacroHelper {
       override val treeCopy = newStrictTreeCopier
       override def transform(t: Tree) = {
         super.transform(t) match {
-          case Apply(select, typeName::query::resultType::placeHolder::Nil) => {
-            Apply(select, typeName::query::resultType::params)
+          case Apply(select, typeName::query::listApply::Nil) => {
+            val Apply(typeApply, placeHolderParams) = listApply
+            val applyParams = Apply(typeApply, params)
+            Apply(select, typeName::query::applyParams::Nil)
           }
           case Ident(name) if name.decoded == "AnyRef" => {
             createTreeFromTypeName(typeName)
@@ -384,13 +394,13 @@ abstract class GigaSpaceMacroHelper {
       Ident(newTypeName(typeName))
     } else {
         val names = splitName.toList
-        helper(Ident(names.head), names.tail)
+        helper(Ident(newTermName(names.head)), names.tail)
     }
   }
   
   protected def createFinalInvocationTree(sqlQueryTree: c.Tree): c.Tree = {
     val c.Expr(gigaSpaceTree) = reify { c.prefix.splice.gigaSpace }
-    Apply(Select(gigaSpaceTree, getInvocationMethodName), getInvocationParams(sqlQueryTree))
+    Apply(Select(gigaSpaceTree, newTermName(getInvocationMethodName)), getInvocationParams(sqlQueryTree))
   }
   
   case class VisitResult(query: String, isLeaf: Boolean)

@@ -115,6 +115,13 @@ object ScalaLocalScriptExecutor {
       }}).mkString(Properties.lineSeparator) 
     }
     
+    import org.openspaces.scala.core.ScalaGigaSpacesImplicits.ScalaAsyncFutureListener
+    import org.openspaces.scala.core.ScalaGigaSpacesImplicits.ScalaEnhancedGigaSpaceWrapper
+    import org.openspaces.scala.core.ScalaGigaSpacesImplicits.QueryMacroStringImplicits
+    import org.openspaces.scala.core.ScalaGigaSpacesImplicits.QueryMacroDateImplicits
+    import org.openspaces.scala.core.MacroDirectives.{select, orderBy, groupBy}
+    import org.openspaces.scala.core.GigaSpaceMacroPredicateWrapper
+    
     { params: java.util.Map[String, Object] =>
 
       ${ 
