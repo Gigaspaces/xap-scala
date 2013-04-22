@@ -2,9 +2,6 @@ package org.openspaces.scala.common
 
 import scala.beans.BeanProperty
 import org.openspaces.scala.core.aliases.annotation._
-import com.gigaspaces.annotation.pojo.SpaceClass
-import com.gigaspaces.annotation.pojo.SpaceClass.IncludeProperties
-import com.gigaspaces.annotation.pojo.SpaceClassConstructor
 
 case class ScalaDataClass(@SpaceId @BeanProperty var id: String) extends Serializable {
   def this() = this(null)
