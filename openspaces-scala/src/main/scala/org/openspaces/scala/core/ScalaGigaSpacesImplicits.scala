@@ -1,3 +1,18 @@
+/*
+ * Copyright 2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.openspaces.scala.core
 
 import language.experimental.macros
@@ -20,8 +35,17 @@ import com.gigaspaces.client.ChangeResult
 import java.util.concurrent.Future
 import com.gigaspaces.query.ISpaceQuery
 
+/**
+ * A set of implicit classes that enhance various OpenSpaces elements.
+ * 
+ * @since 9.6
+ * @author Dan Kilman
+ */
 object ScalaGigaSpacesImplicits {
 
+  /**
+   * Implicit conversion from a function [[AsyncResult[T] => Unit]] to [[com.gigaspaces.async.AsyncFutureListener<T>]].
+   */
   implicit class ScalaAsyncFutureListener[T](asyncFutureListener: AsyncResult[T] => Unit) 
     extends AsyncFutureListener[T] {
     override def onResult(result: AsyncResult[T]) {
@@ -29,14 +53,23 @@ object ScalaGigaSpacesImplicits {
     }
   }
   
+  /**
+   * Implicit conversion from [[org.openspaces.core.GigaSpace]] to a wrappen implemention with various methods.
+   */
   implicit class ScalaEnhancedGigaSpaceWrapper(val gigaSpace: GigaSpace) {
     
+    /**
+     * @see [[org.openspaces.core.GigaSpace#execute]]
+     */
     def execute[T <: Serializable, R](
       mapper: GigaSpace => T,
       reducer: Seq[AsyncResult[T]] => R): AsyncFuture[R] = {
       gigaSpace.execute(new ScalaDistributedTask(mapper, reducer))
     }
     
+    /**
+     * @see [[org.openspaces.core.GigaSpace#execute]]
+     */
     def execute[T <: Serializable, R](
       mapper: GigaSpace => T,
       reducer: Seq[AsyncResult[T]] => R,
@@ -44,16 +77,25 @@ object ScalaGigaSpacesImplicits {
       gigaSpace.execute(new ScalaDistributedTask(mapper, reducer), routing:_*)
     }
     
+    /**
+     * @see [[org.openspaces.core.GigaSpace#execute]]
+     */    
     def execute[T <: Serializable](mapper: GigaSpace => T): AsyncFuture[T] = {
       gigaSpace.execute(new ScalaTask(mapper))
     }
     
+    /**
+     * @see [[org.openspaces.core.GigaSpace#execute]]
+     */
     def execute[T <: Serializable](
         mapper: GigaSpace => T,
         routing: AnyRef): AsyncFuture[T] = {
       gigaSpace.execute(new ScalaTask(mapper), routing)
     }
-    
+
+    /**
+     * @see [[org.openspaces.core.GigaSpace#execute]]
+     */
     def execute[T <: Serializable](
         mapper: GigaSpace => T,
         routing: AnyRef,
@@ -61,22 +103,38 @@ object ScalaGigaSpacesImplicits {
       gigaSpace.execute(new ScalaTask(mapper), routing, new ScalaAsyncFutureListener(asyncFutureListener))
     }
     
+    /**
+     * Returns a wrapper around the [[GigaSpace]] instance that provides many predicate based query operations
+     * on the space.
+     */
     def predicate = new GigaSpaceMacroPredicateWrapper(gigaSpace)
     
   }
   
+  /**
+   * A set of operators to be used exclusivly withing predicate queries on the space.
+   * These provide a mechanism for using the matching [[String]] operators provided by the SQLQuery API.
+   */
   implicit class QueryMacroStringImplicits(value: String) {
     def like    (regex: String): Boolean = ???
     def notLike (regex: String): Boolean = ???
     def rlike   (regex: String): Boolean = ???
   }
-  
+
+  /**
+   * A set of operators to be used exclusivly withing predicate queries on the space.
+   * These provide an enhancements to [[java.util.Data]] which allow comparisons to be made on date instances.
+   */
   implicit class QueryMacroDateImplicits(date: java.util.Date) extends Ordered[java.util.Date] {
     def compare(anotherDate: java.util.Date): Int = ???
   }
   
 }
 
+/**
+ * A set of directive to be used exclusivly withing predicate queries on the space.
+ * These provided support for projections, order by and group by.
+ */
 object MacroDirectives {
   def select(properties: Any*): Unit = ???
   def orderBy(properties: Any*): OrderByDirection = ???
@@ -88,6 +146,14 @@ object MacroDirectives {
   }
 }
 
+/**
+ * A wrapper around [[org.openspaces.core.GigaSpace]] instances that provides many predicate based query operations
+ * on the space.
+ * 
+ * @see [[org.openspaces.core.GigaSpace]]
+ * @since 9.6
+ * @author Dan Kilman
+ */
 class GigaSpaceMacroPredicateWrapper(val gigaSpace: GigaSpace) {
   
   def read[T](predicate: T => Boolean): T = 
@@ -230,7 +296,7 @@ class GigaSpaceMacroPredicateWrapper(val gigaSpace: GigaSpace) {
   
 }
 
-class ScalaTask[T <: Serializable](
+protected class ScalaTask[T <: Serializable](
     mapper: GigaSpace => T)
   extends Task[T]
   with TaskGigaSpaceAware {
@@ -244,7 +310,7 @@ class ScalaTask[T <: Serializable](
   override def execute(): T = mapper(colocatedGigaSpace)
 }
 
-class ScalaDistributedTask[T <: Serializable, R](
+protected class ScalaDistributedTask[T <: Serializable, R](
     mapper: GigaSpace => T,
     reducer: Seq[AsyncResult[T]] => R)
   extends ScalaTask[T](mapper)

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.openspaces.scala.core.makro
 
 import scala.annotation.tailrec
@@ -7,6 +22,10 @@ import com.j_spaces.core.client.SQLQuery
 import com.gigaspaces.async.AsyncFutureListener
 import com.gigaspaces.client.ChangeResult
 
+/**
+ * @since 9.6
+ * @author Dan Kilman
+ */
 abstract class ReadTakeMultipleMacroHelper extends GigaSpaceMacroHelper {
   
   val take: Boolean
@@ -25,6 +44,10 @@ abstract class ReadTakeMultipleMacroHelper extends GigaSpaceMacroHelper {
   
 }
 
+/**
+ * @since 9.6
+ * @author Dan Kilman
+ */
 abstract class ReadTakeMacroHelper extends GigaSpaceMacroHelper {
   
   val ifExists: Boolean
@@ -46,6 +69,10 @@ abstract class ReadTakeMacroHelper extends GigaSpaceMacroHelper {
   }
 }
 
+/**
+ * @since 9.6
+ * @author Dan Kilman
+ */
 abstract class CountClearMacroHelper extends GigaSpaceMacroHelper {
   
   val clear: Boolean
@@ -62,6 +89,10 @@ abstract class CountClearMacroHelper extends GigaSpaceMacroHelper {
   
 }
 
+/**
+ * @since 9.6
+ * @author Dan Kilman
+ */
 abstract class ChangeMacroHelper extends GigaSpaceMacroHelper {
   
   val changeSetExpr: c.Expr[ChangeSet]
@@ -81,6 +112,10 @@ abstract class ChangeMacroHelper extends GigaSpaceMacroHelper {
   
 }
 
+/**
+ * @since 9.6
+ * @author Dan Kilman
+ */
 abstract class AsyncReadTakeMacroHelper[T] extends GigaSpaceMacroHelper {
   
   val take: Boolean
@@ -102,6 +137,10 @@ abstract class AsyncReadTakeMacroHelper[T] extends GigaSpaceMacroHelper {
   override protected def getInvocationMethodName: String = "async" + (if (take) "Take" else "Read")
 }
 
+/**
+ * @since 9.6
+ * @author Dan Kilman
+ */
 abstract class AsyncChangeMacroHelper[T] extends GigaSpaceMacroHelper {
   
   val changeSetExpr: c.Expr[ChangeSet]
@@ -125,6 +164,10 @@ abstract class AsyncChangeMacroHelper[T] extends GigaSpaceMacroHelper {
   override protected def getInvocationMethodName: String = "asyncChange"
 }
 
+/**
+ * @since 9.6
+ * @author Dan Kilman
+ */
 object GigaSpaceMacroHelper {
   def createQuery[T](typeName: String, query: String, params: List[Object]) = {
     SQLQueryMacroHelper.newQuery[T](typeName, 
@@ -134,6 +177,10 @@ object GigaSpaceMacroHelper {
   }
 }
 
+/**
+ * @since 9.6
+ * @author Dan Kilman
+ */
 abstract class GigaSpaceMacroHelper {
   
   val c: GigaSpaceMacros.TypedContext
@@ -184,7 +231,6 @@ abstract class GigaSpaceMacroHelper {
     var orderByProperties: List[String] = null
     var orderByDirection: String = null
     var groupByProperties: List[String] = null
-    
     
     statements map(removeFullyQualifiedPackageNames) foreach { _ match {
       case Select(Apply(Ident(directive), params), subDirective) 
@@ -270,10 +316,6 @@ abstract class GigaSpaceMacroHelper {
                                            params, 
                                            typeName,
                                            selectProperties)
-    
-//        c.echo(null, "0: " + showRaw(apply))
-//    c.echo(null, "1: " + showRaw(sqlQueryTree))
-//    c.echo(null, "2: " + sqlQueryTree.toString)
     
     // build the operation invocation tree and pass the new sqlQueryExpr
     // gigaSpace.read(new SQLQuery(typeName, query, QueryResultType.OBJECT, param1, param2, ..., paramN))

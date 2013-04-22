@@ -1,5 +1,8 @@
 package org.openspaces.scala.util
 
+/**
+ * Utilty methods.
+ */
 object Utils {
 
   type Closeable = { def close(): Unit }

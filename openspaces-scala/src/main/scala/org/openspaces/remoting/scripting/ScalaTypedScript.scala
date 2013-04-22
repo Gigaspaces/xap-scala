@@ -1,3 +1,18 @@
+/*
+ * Copyright 2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.openspaces.remoting.scripting
 
 import scala.beans.BeanProperty
@@ -12,6 +27,12 @@ import com.j_spaces.kernel.ClassLoaderHelper
 import org.openspaces.remoting.RemoteResultReducer
 import scala.annotation.varargs
 
+/**
+ * A trait that is included in all scala based typed scripts.
+ * 
+ * @since 9.6
+ * @author Dan Kilman
+ */
 trait ScalaTypedScript extends TypedScript with Externalizable {
   
   @BeanProperty val parameterTypes: JMap[String, Class[_]] = new java.util.HashMap[String, Class[_]]()
@@ -56,6 +77,13 @@ trait ScalaTypedScript extends TypedScript with Externalizable {
   
 }
 
+/**
+ * An extenstion of [[org.openspaces.remoting.scripting.StaticScript]] with the ability to define
+ * types for paramters.
+ * 
+ * @since 9.6
+ * @author Dan Kilman
+ */
 class ScalaTypedStaticScript(name: String, scriptType: String, code: String) 
   extends StaticScript(name, scriptType, code)
   with ScalaTypedScript {
@@ -76,6 +104,13 @@ class ScalaTypedStaticScript(name: String, scriptType: String, code: String)
   }
 }
 
+/**
+ * An extenstion of [[org.openspaces.remoting.scripting.StaticResourceScript]] with the ability to define
+ * types for paramters.
+ * 
+ * @since 9.6
+ * @author Dan Kilman
+ */
 class ScalaTypedStaticResourceScript(name: String, scriptType: String, resourceLocation: String) 
   extends StaticResourceScript(name, scriptType, resourceLocation)
   with ScalaTypedScript {
@@ -94,6 +129,13 @@ class ScalaTypedStaticResourceScript(name: String, scriptType: String, resourceL
   }
 }
 
+/**
+ * An extenstion of [[org.openspaces.remoting.scripting.ResourceLazyLoadingScript]] with the ability to define
+ * types for paramters.
+ * 
+ * @since 9.6
+ * @author Dan Kilman
+ */
 class ScalaTypedResourceLazyLoadingScript(name: String, scriptType: String, resourceLocation: String) 
   extends ResourceLazyLoadingScript(name, scriptType, resourceLocation)
   with ScalaTypedScript {
