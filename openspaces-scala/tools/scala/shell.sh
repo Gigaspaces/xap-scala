@@ -1,9 +1,6 @@
 export JSHOMEDIR=`dirname $0`/../..
 . `dirname $0`/../../bin/setenv.sh
 
-SCALA_ROOT= # Path to scala installation root
-SCALA_JARS="$SCALA_ROOT/lib/*"
-GS_SCALA_JARS="$JSHOMEDIR/lib/platform/scala/*"
 REPL_CLASSPATH="-cp $GS_JARS:$SPRING_JARS:$SIGAR_JARS:$SCALA_JARS:$GS_SCALA_JARS"
 REPL_EXTRA_JAVA_OPTS="-Dcom.gs.logging.debug=false"
 REPL_JAVA_OPTS="$JAVA_OPTIONS $RMI_OPTIONS $LOOKUP_LOCATORS_PROP $LOOKUP_GROUPS_PROP $GS_LOGGING_CONFIG_FILE_PROP $REPL_EXTRA_JAVA_OPTS"
