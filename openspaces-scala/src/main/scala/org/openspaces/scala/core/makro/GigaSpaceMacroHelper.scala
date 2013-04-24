@@ -208,20 +208,27 @@ abstract class GigaSpaceMacroHelper {
   
   def generate[T](predicate: c.Expr[T => Boolean]): c.Tree = {
     
-    val (paramName, typeName, body) = extractParameterNameTypeNameAndApplyTree(predicate)
-    body match {
-      case Block(statements, rawExpression) => {
-        val (selectProperties, orderByProperties, orderByDirection, groupByProperties) = 
-          processStatements(statements, paramName.encoded)
-        processExpression(paramName, 
-                          typeName, 
-                          rawExpression, 
-                          selectProperties, 
-                          orderByProperties, 
-                          orderByDirection,
-                          groupByProperties)
+    try {
+      val (paramName, typeName, body) = extractParameterNameTypeNameAndApplyTree(predicate)
+      body match {
+        case Block(statements, rawExpression) => {
+          val (selectProperties, orderByProperties, orderByDirection, groupByProperties) = 
+            processStatements(statements, paramName.encoded)
+          processExpression(paramName, 
+                            typeName, 
+                            rawExpression, 
+                            selectProperties, 
+                            orderByProperties, 
+                            orderByDirection,
+                            groupByProperties)
+        }
+        case _ => processExpression(paramName, typeName, body) 
       }
-      case _ => processExpression(paramName, typeName, body) 
+    } catch {
+      case e: Throwable => {
+        c.error(c.enclosingPosition, e.getStackTraceString)
+        throw e
+      }
     }
   }
  
