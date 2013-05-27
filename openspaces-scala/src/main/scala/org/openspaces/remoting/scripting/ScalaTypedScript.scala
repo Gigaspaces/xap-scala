@@ -115,6 +115,8 @@ class ScalaTypedStaticResourceScript(name: String, scriptType: String, resourceL
   extends StaticResourceScript(name, scriptType, resourceLocation)
   with ScalaTypedScript {
   
+  def this() = this(null, null, null)
+  
   override def parameter(name: String, value: Any) = { super.parameter(name, value); this }
   override def name(name: String) = { super.name(name); this }
   override def script(script: String) = { super.script(script); this }
