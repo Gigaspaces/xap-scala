@@ -44,7 +44,7 @@ import com.gigaspaces.query.ISpaceQuery
 object ScalaGigaSpacesImplicits {
 
   /**
-   * Implicit conversion from a function [[AsyncResult[T] => Unit]] to [[com.gigaspaces.async.AsyncFutureListener<T>]].
+   * Implicit conversion from a function [[com.gigaspaces.async.AsyncResult[T] => Unit]] to [[com.gigaspaces.async.AsyncFutureListener<T>]].
    */
   implicit class ScalaAsyncFutureListener[T](asyncFutureListener: AsyncResult[T] => Unit) 
     extends AsyncFutureListener[T] {
@@ -104,7 +104,7 @@ object ScalaGigaSpacesImplicits {
     }
     
     /**
-     * Returns a wrapper around the [[GigaSpace]] instance that provides many predicate based query operations
+     * Returns a wrapper around the [[org.openspaces.core.GigaSpace]] instance that provides many predicate based query operations
      * on the space.
      */
     def predicate = new GigaSpaceMacroPredicateWrapper(gigaSpace)
@@ -112,8 +112,8 @@ object ScalaGigaSpacesImplicits {
   }
   
   /**
-   * A set of operators to be used exclusivly withing predicate queries on the space.
-   * These provide a mechanism for using the matching [[String]] operators provided by the SQLQuery API.
+   * A set of operators to be used exclusivly within predicate queries on the space.
+   * These provide a mechanism for using the matching [[java.lang.String]] operators provided by the SQLQuery API.
    */
   implicit class QueryMacroStringImplicits(value: String) {
     def like    (regex: String): Boolean = ???
@@ -122,8 +122,8 @@ object ScalaGigaSpacesImplicits {
   }
 
   /**
-   * A set of operators to be used exclusivly withing predicate queries on the space.
-   * These provide an enhancements to [[java.util.Data]] which allow comparisons to be made on date instances.
+   * A set of operators to be used exclusivly within predicate queries on the space.
+   * These provide an enhancements to [[java.util.Date]] which allow comparisons to be made on date instances.
    */
   implicit class QueryMacroDateImplicits(date: java.util.Date) extends Ordered[java.util.Date] {
     def compare(anotherDate: java.util.Date): Int = ???
@@ -132,7 +132,7 @@ object ScalaGigaSpacesImplicits {
 }
 
 /**
- * A set of directive to be used exclusivly withing predicate queries on the space.
+ * A set of directive to be used exclusivly within predicate queries on the space.
  * These provided support for projections, order by and group by.
  */
 object MacroDirectives {
