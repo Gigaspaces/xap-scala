@@ -66,8 +66,8 @@ class GigaSpacesScalaReplLoop extends ILoop {
     if (importsFile.isFile()) {
       Utils.withCloseable(io.Source.fromFile(importsFile)) { imports =>
         imports.getLines().foreach { imp => 
-          if (!imp.isEmpty() && !imp.startsWith("#")) {
-            intp.quietImport(imp) 
+          if (!imp.trim().isEmpty() && !imp.startsWith("#")) {
+            intp.quietImport(imp.trim()) 
           }
         }
       }
