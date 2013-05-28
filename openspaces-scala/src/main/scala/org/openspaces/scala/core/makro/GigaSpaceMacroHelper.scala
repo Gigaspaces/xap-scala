@@ -16,6 +16,7 @@
 package org.openspaces.scala.core.makro
 
 import scala.annotation.tailrec
+import scala.language.postfixOps 
 import com.gigaspaces.client.ChangeSet
 import com.gigaspaces.client.SpaceProxyOperationModifiers
 import com.j_spaces.core.client.SQLQuery
@@ -516,7 +517,7 @@ abstract class GigaSpaceMacroHelper {
   }
   
   private def box(t: c.Tree): c.Tree = {
-    Apply(Select(Select(Select(Select(Select(Ident("org"), 
+    Apply(Select(Select(Select(Select(Select(Ident(newTermName("org")), 
          newTermName("openspaces")), newTermName("core")), 
          newTermName("util")), newTermName("Boxer")), newTermName("box")), List(t))
   }

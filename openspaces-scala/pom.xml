@@ -93,9 +93,10 @@
 						<configuration>
 							<args>
 								<!-- <arg>-Xlog-free-terms</arg> <arg>-Ymacro-debug-lite</arg> -->
-								<arg>-make:transitive</arg>
 								<arg>-dependencyfile</arg>
 								<arg>${project.build.directory}/.scala_dependencies</arg>
+								<arg>-deprecation</arg>
+								<arg>-feature</arg>
 							</args>
 						</configuration>
 					</execution>

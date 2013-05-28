@@ -1,5 +1,7 @@
 package org.openspaces.scala.util
 
+import scala.language.reflectiveCalls
+
 /**
  * Utilty methods.
  */
