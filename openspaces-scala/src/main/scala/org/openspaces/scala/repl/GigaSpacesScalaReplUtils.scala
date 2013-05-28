@@ -28,7 +28,7 @@ import org.openspaces.core.cluster.ClusterInfoAware
 import org.openspaces.core.executor.Task
 
 /**
- * Holders a GigaSpace proxy, the application context and the cluster info for execute operations
+ * Holds a GigaSpace proxy, the application context and the cluster info for execute operations
  * performed in the REPL.
  * 
  * @see [[org.openspaces.scala.repl.GigaSpacesScalaReplUtils#execute]]
