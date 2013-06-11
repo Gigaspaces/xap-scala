@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.gigaspaces</groupId>
 	<artifactId>gs-openspaces-scala-parent</artifactId>
-	<version>9.6.0-SNAPSHOT-20130611.b9484-13</version>
+	<version>9.6.0-SNAPSHOT-20130611.b9484-14</version>
 	<packaging>pom</packaging>
 	<name>${project.artifactId}</name>
 	
