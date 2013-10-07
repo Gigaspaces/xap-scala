@@ -21,7 +21,19 @@
 			<groupId>com.gigaspaces</groupId>
 			<artifactId>gs-runtime</artifactId>
 		</dependency>
-		
+
+    <dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-tx</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+    <dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<scope>test</scope>
+		</dependency>
+				
 		<dependency>
 			<groupId>com.gigaspaces</groupId>
 			<artifactId>gs-openspaces-scala</artifactId>
