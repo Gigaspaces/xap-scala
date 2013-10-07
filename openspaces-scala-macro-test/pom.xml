@@ -15,10 +15,13 @@
 		<dependency>
 			<groupId>com.gigaspaces</groupId>
 			<artifactId>gs-openspaces</artifactId>
-			<version>${gsVersion}</version>
-			<scope>provided</scope>
 		</dependency>
 	
+	  <dependency>
+			<groupId>com.gigaspaces</groupId>
+			<artifactId>gs-runtime</artifactId>
+		</dependency>
+		
 		<dependency>
 			<groupId>com.gigaspaces</groupId>
 			<artifactId>gs-openspaces-scala</artifactId>
