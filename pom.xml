@@ -14,7 +14,6 @@
 		<gsVersion>${project.version}</gsVersion>
 		<scalaVersion>2.10.1</scalaVersion>
 		<junitVersion>4.8.2</junitVersion>
-		<springVersion>3.2.4.RELEASE</springVersion>
 	</properties>
 	
 	<repositories>
