@@ -18,17 +18,20 @@
 	
 	<repositories>
 		<repository>
+         	<id>local-nexus</id>
+	       	<name>local-nexus</name>
+       		<url>http://nexus.gsdev.info:8088/nexus</url>
+        </repository>
+		<repository>
 			<id>scala-tools.org</id>
 			<name>Scala-Tools Maven2 Repository</name>
 			<url>http://oss.sonatype.org/content/groups/scala-tools</url>
-		</repository>
-		
+		</repository>		
 		<repository>
 			<id>org.openspaces</id>
 			<name>OpenSpaces</name>
 			<url>http://maven-repository.openspaces.org</url>
-		</repository>
-		
+		</repository>		
 	</repositories>
 	
 	<pluginRepositories>
