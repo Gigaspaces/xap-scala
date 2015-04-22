@@ -8,8 +8,8 @@
 	<name>${project.artifactId}</name>
 
 	<properties>
-		<maven.compiler.source>1.6</maven.compiler.source>
-		<maven.compiler.target>1.6</maven.compiler.target>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
 		<encoding>UTF-8</encoding>
 		<gsVersion>${project.version}</gsVersion>
 		<scalaVersion>2.10.4</scalaVersion>
