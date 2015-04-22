@@ -58,7 +58,7 @@ class GigaSpaceMacrosFullPathTest {
   @After
   def after() {
     if (configurer != null) {
-      configurer.destroy()
+      configurer.close()
     }
   } 
   

@@ -20,7 +20,7 @@ trait StartNewGigaSpace {
   @After
   def after() {
     if (configurer != null) {
-      configurer.destroy()
+      configurer.close()
     }
   } 
   

@@ -12,8 +12,8 @@
 		<maven.compiler.target>1.6</maven.compiler.target>
 		<encoding>UTF-8</encoding>
 		<gsVersion>${project.version}</gsVersion>
-		<scalaVersion>2.10.1</scalaVersion>
-		<junitVersion>4.8.2</junitVersion>
+		<scalaVersion>2.10.4</scalaVersion>
+		<junitVersion>4.9</junitVersion>
 	</properties>
 	
 	<repositories>
