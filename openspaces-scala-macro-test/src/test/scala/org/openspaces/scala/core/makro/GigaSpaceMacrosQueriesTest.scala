@@ -37,7 +37,7 @@ object GigaSpaceMacrosQueriesTest {
   @AfterClass
   def afterClass() {
     if (configurer != null) {
-      configurer.destroy()
+      configurer.close()
     }
   }
 }
