@@ -53,10 +53,16 @@ class GigaSpacesScalaReplLoop extends ILoop {
   
   override def prompt = "\nxap> " 
     
-  override def postInitialization() {
+  /*override def postInitialization() {
     super.postInitialization()
     addCustomImports()
     runCustomInitializationCode()
+  }*/
+
+  override def loadFiles(settings: Settings) {
+    addCustomImports()
+    runCustomInitializationCode()
+    super.loadFiles(settings)
   }
   
   private def addCustomImports() {
@@ -67,7 +73,9 @@ class GigaSpacesScalaReplLoop extends ILoop {
       Utils.withCloseable(io.Source.fromFile(importsFile)) { imports =>
         imports.getLines().foreach { imp => 
           if (!imp.trim().isEmpty() && !imp.startsWith("#")) {
-            intp.quietImport(imp.trim()) 
+            intp.beQuietDuring {
+              command("import " + imp)
+            }
           }
         }
       }
@@ -107,7 +115,7 @@ class GigaSpacesScalaReplLoop extends ILoop {
 object GigaSpacesScalaRepl {
   
   def main(args: Array[String]) {
-    new GigaSpacesScalaReplLoop process(args)
+    new GigaSpacesScalaReplLoop process new Settings
   }
   
 }

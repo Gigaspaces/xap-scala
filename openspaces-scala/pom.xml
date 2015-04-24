@@ -101,14 +101,15 @@
 						<configuration>
 							<args>
 								<!-- <arg>-Xlog-free-terms</arg> <arg>-Ymacro-debug-lite</arg> -->
-								<arg>-dependencyfile</arg>
-								<arg>${project.build.directory}/.scala_dependencies</arg>
 								<arg>-deprecation</arg>
 								<arg>-feature</arg>
 							</args>
 						</configuration>
 					</execution>
 				</executions>
+				<configuration>
+					<scalaCompatVersion>${scalaBinaryVersion}</scalaCompatVersion>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

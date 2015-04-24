@@ -90,7 +90,7 @@ object ScalaLocalScriptExecutor {
       case "boolean" => false.asInstanceOf[T]
       case "byte" => (0: Byte).asInstanceOf[T]
       case "short" => (0: Short).asInstanceOf[T]
-      case "char" => '\0'.asInstanceOf[T]
+      case "char" => '\u0000'.asInstanceOf[T]
       case "int" => 0.asInstanceOf[T]
       case "long" => 0L.asInstanceOf[T]
       case "float" => 0.0F.asInstanceOf[T]

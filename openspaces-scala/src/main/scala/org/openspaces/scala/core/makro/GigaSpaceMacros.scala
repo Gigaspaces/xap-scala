@@ -15,7 +15,7 @@
  */
 package org.openspaces.scala.core.makro
 
-import reflect.macros.Context
+import reflect.macros.blackbox.Context
 import com.j_spaces.core.client.SQLQuery
 import org.openspaces.scala.core.ScalaGigaSpacesImplicits
 import com.gigaspaces.client.ReadModifiers
