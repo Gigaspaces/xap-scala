@@ -41,6 +41,7 @@
 	<modules>
 		<module>openspaces-scala</module>
 		<module>openspaces-scala-macro-test</module>
+		<module>openspaces-scala-repl-test</module>
 	</modules>
 
 	<!-- Align spring versions for all projects using openspaces -->

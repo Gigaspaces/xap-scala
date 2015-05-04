@@ -15,9 +15,10 @@
  */
 package org.openspaces.scala.repl
 
+import scala.tools.nsc.util._
 import scala.tools.nsc.{GenericRunnerSettings, Properties, Settings}
 import scala.tools.nsc.interpreter._
-import java.io.File
+import java.io.{BufferedReader, File}
 import org.openspaces.scala.util.{ImportReader, Utils}
 import com.j_spaces.kernel.Environment
 
@@ -27,7 +28,10 @@ import com.j_spaces.kernel.Environment
  * @since 9.6
  * @author Dan Kilman
  */
-class GigaSpacesScalaReplLoop extends ILoop {
+class GigaSpacesScalaReplLoop(in0: Option[BufferedReader],
+                              override protected val out: JPrintWriter) extends ILoop(in0, out) {
+
+  def this() = this(None, new JPrintWriter(Console.out, true))
   
   override def process(settings: Settings): Boolean = {
     echo("Initializing... This may take a few seconds.")
@@ -121,6 +125,20 @@ object GigaSpacesScalaRepl {
 
     new GigaSpacesScalaReplLoop process settings
   }
-  
+
+  def run(code: String, sets: Settings = new Settings): String = {
+    // Used during tests. This is implemented in the same way as in ILoop.
+    import java.io.{BufferedReader, StringReader, OutputStreamWriter}
+
+    stringFromStream { ostream =>
+      Console.withOut(ostream) {
+        val input    = new BufferedReader(new StringReader(code))
+        val output   = new JPrintWriter(new OutputStreamWriter(ostream), true)
+        val repl     = new GigaSpacesScalaReplLoop(Some(input), output)
+
+        repl process sets
+      }
+    }
+  }
 }
 
