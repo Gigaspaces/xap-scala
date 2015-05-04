@@ -19,25 +19,7 @@ class GigaSpacesScalaReplTest {
     val input = ""
     val output = replOutputFor(input)
 
-    println("*************************************************")
-    println(output)
-    Assert.assertEquals(0, 0)
+    Assert.assertEquals((), output)
   }
 
-  @Test
-  def anotherTestIsRunTwice() = {
-    val input = ""
-    val output = replOutputFor(input)
-
-    val input2 = ""
-    val output2 = replOutputFor(input2)
-
-    println("*************************************************")
-    println(output)
-    Assert.assertEquals(0, 0)
-
-    println("*************************************************")
-    println(output2)
-    Assert.assertEquals(0, 0)
-  }
 }
