@@ -32,9 +32,16 @@ class GigaSpacesScalaReplLoop(in0: Option[BufferedReader],
                               override protected val out: JPrintWriter) extends ILoop(in0, out) {
 
   def this() = this(None, new JPrintWriter(Console.out, true))
-  
+
+  val newInitStyle = isNewInitStyleUsed
+
+  val initCodePathProp = "org.os.scala.repl.initcode"
+
   override def process(settings: Settings): Boolean = {
     echo("Initializing... This may take a few seconds.")
+    if (newInitStyle) {
+      setInitScript()
+    }
     super.process(settings)
   }
   
@@ -58,8 +65,10 @@ class GigaSpacesScalaReplLoop(in0: Option[BufferedReader],
 
   override def loadFiles(settings: Settings) {
     super.loadFiles(settings)
-    addCustomImports()
-    runCustomInitializationCode()
+    if (!newInitStyle) {
+      addCustomImports()
+      runCustomInitializationCode()
+    }
   }
   
   private def addCustomImports() {
@@ -107,6 +116,20 @@ class GigaSpacesScalaReplLoop(in0: Option[BufferedReader],
       }
     }
   }
+
+  private def isNewInitStyleUsed: Boolean = {
+    val newInitStylePathProp = "org.os.scala.repl.newinitstyle"
+    Properties.propOrFalse(newInitStylePathProp)
+  }
+
+  private def setInitScript() = {
+    val initCodePathDefault = s"${Environment.getHomeDirectory()}/tools/scala/conf/new-init-code.scala"
+    val initCodePath = Properties.propOrElse(initCodePathProp, initCodePathDefault)
+    val initFile = new File(initCodePath)
+    if (initFile.isFile) {
+      new sys.SystemProperties += ("scala.repl.autoruncode" -> initCodePath)
+    }
+  }
   
 }
 
@@ -121,7 +144,8 @@ object GigaSpacesScalaRepl {
   def main(args: Array[String]) {
     val settings = new GenericRunnerSettings(Console.println)
     val defaultArgs = List("-usejavacp")
-    settings.processArguments(defaultArgs ++ args.iterator.toList, true)
+    val processAll = true
+    settings.processArguments(defaultArgs ++ args.iterator.toList, processAll)
 
     new GigaSpacesScalaReplLoop process settings
   }

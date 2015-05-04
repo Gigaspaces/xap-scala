@@ -15,11 +15,20 @@ class GigaSpacesScalaReplTest {
   }
 
   @Test
-  def testIsRun() = {
-    val input = ""
-    val output = replOutputFor(input)
-
+  def emptyRun() = {
+    val output = replOutputFor("")
     Assert.assertEquals((), output)
+  }
+
+  @Test
+  def runWithNewInitScala() = {
+    System.setProperty("org.os.scala.repl.newinitstyle", "true")
+    try {
+      val output = replOutputFor("")
+      Assert.assertEquals((), output)
+    } finally {
+      System.clearProperty("org.os.scala.repl.newinitstyle")
+    }
   }
 
 }
