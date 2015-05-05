@@ -1,5 +1,7 @@
 package org.openspaces.remoting.scripting
 
+import java.util.concurrent.TimeUnit
+
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -9,20 +11,16 @@ import org.openspaces.scala.common.ScalaDataClass
 import org.springframework.test.context.ContextConfiguration
 import javax.annotation.Resource
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
-import org.openspaces.scala.common.ScalaDataClass2
-import org.openspaces.scala.common.ScalaDataClass4
 import org.openspaces.scala.common.ScalaImmutableDataClass1
 
-// TODO SCALA SCRIPT add/test validation:
-// 1) wrong script type
 @RunWith(classOf[SpringJUnit4ClassRunner])
 @ContextConfiguration(value = Array("/org/openspaces/remoting/scripting/scala-scripting-context.xml"))
 class ScalaLocalScriptExecutorTest {
 
   @Resource var scriptingExecutorImpl: DefaultScriptingExecutor = _
-  @Resource var asyncScriptingExecutor: ScriptingExecutor[_] = _
-  @Resource var executorScriptingExecutor: ScriptingExecutor[_] = _ 
+  @Resource var executorScriptingExecutor: ScriptingExecutor[_] = _
   @Resource var gigaSpace: GigaSpace = _
+  val spaceObject = ScalaImmutableDataClass1("123123123", "theName")
   
   @Before
   def before() {
@@ -31,8 +29,7 @@ class ScalaLocalScriptExecutorTest {
   
   @Test
   def basicTest() {
-    val written = ScalaImmutableDataClass1("123123123", "theName")
-    gigaSpace.write(written)
+    gigaSpace.write(spaceObject)
     
     val userCode = """
       import org.openspaces.scala.common.ScalaImmutableDataClass1
@@ -68,7 +65,7 @@ class ScalaLocalScriptExecutorTest {
     val result = executorScriptingExecutor.execute(script)
     
     Assert.assertTrue(result.isInstanceOf[Int])
-    Assert.assertEquals(written.name.length+1+1+5+3+11+5+15+3, result.asInstanceOf[Int])
+    Assert.assertEquals(spaceObject.name.length+1+1+5+3+11+5+15+3, result.asInstanceOf[Int])
     
   }
   
@@ -109,5 +106,65 @@ class ScalaLocalScriptExecutorTest {
     val result = executorScriptingExecutor.execute(script)
     Assert.assertEquals(4, result)
   }
-  
+
+  @Test(expected = classOf[ScriptExecutionException])
+  def errorScriptTest() {
+    val script = new ScalaTypedStaticScript("errorScriptTest", "scala", "val x = 30 / 0")
+    executorScriptingExecutor.execute(script)
+  }
+
+  @Test(expected = classOf[ScriptCompilationException])
+  def syntaxErrorTest() {
+    val script = new ScalaTypedStaticScript("syntaxErrorTest", "scala", "val x = 30 30")
+    executorScriptingExecutor.execute(script)
+  }
+
+  @Test(expected = classOf[ScriptCompilationException])
+  def missingParameterTest() {
+    val script = new ScalaTypedStaticScript("missingParameterTest", "scala", "val x = a")
+    val result = executorScriptingExecutor.execute(script)
+  }
+
+  @Test
+  def asyncTest() {
+    gigaSpace.write(spaceObject)
+
+    val userCode = """
+      import org.openspaces.scala.common.ScalaImmutableDataClass1
+      gigaSpace.count(new ScalaImmutableDataClass1(null, null))
+    """
+
+    val script = new ScalaTypedStaticScript("asyncTest", "scala", userCode)
+    val result = executorScriptingExecutor.asyncExecute(script).get(10, TimeUnit.SECONDS)
+
+    Assert.assertTrue(result.isInstanceOf[Int])
+    Assert.assertEquals(1, result.asInstanceOf[Int])
+  }
+
+  @Test
+  def resourceScriptTest(): Unit = {
+    gigaSpace.write(spaceObject)
+
+    val scriptPath = "/org/openspaces/remoting/scripting/simple_script.scala"
+
+    val script = new ScalaTypedStaticResourceScript("resourceScriptTest", "scala", scriptPath)
+    val result = executorScriptingExecutor.execute(script)
+
+    Assert.assertTrue(result.isInstanceOf[Int])
+    Assert.assertEquals(1, result.asInstanceOf[Int])
+  }
+
+  @Test
+  def lazyResourceScriptTest(): Unit = {
+    gigaSpace.write(spaceObject)
+
+    val scriptPath = "/org/openspaces/remoting/scripting/simple_script.scala"
+
+    val script = new ScalaTypedResourceLazyLoadingScript("lazyResourceScriptTest", "scala", scriptPath)
+    val result = executorScriptingExecutor.execute(script)
+
+    Assert.assertTrue(result.isInstanceOf[Int])
+    Assert.assertEquals(1, result.asInstanceOf[Int])
+  }
+
 }
