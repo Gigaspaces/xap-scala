@@ -16,7 +16,7 @@ class GigaSpacesScalaReplTest {
     Assert.assertEquals("", output)
   }
 
-  @Ignore
+  @Ignore("Alternative method to point init script causes issues in maven tests")
   @Test
   def runWithNewInitScalaTest() = {
     System.setProperty("org.os.scala.repl.newinitstyle", "true")
