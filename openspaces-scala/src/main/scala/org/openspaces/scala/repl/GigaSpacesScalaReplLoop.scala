@@ -15,7 +15,6 @@
  */
 package org.openspaces.scala.repl
 
-import scala.tools.nsc.util._
 import scala.tools.nsc.{GenericRunnerSettings, Properties, Settings}
 import scala.tools.nsc.interpreter._
 import java.io.{BufferedReader, File}
@@ -76,7 +75,7 @@ class GigaSpacesScalaReplLoop(in0: Option[BufferedReader],
     // Further code executions can be run using intp.quiteRun method.
     def run() = {
       val importsPathProp = "org.os.scala.repl.imports"
-      val importsPathDefault = s"${Environment.getHomeDirectory()}/tools/scala/conf/repl-imports.conf"
+      val importsPathDefault = s"${getBaseDirectory}/repl-imports.conf"
       val importsPath = Properties.propOrElse(importsPathProp, importsPathDefault)
       withFile(importsPath) { file =>
         savingReader {
@@ -97,13 +96,13 @@ class GigaSpacesScalaReplLoop(in0: Option[BufferedReader],
   
   private def runCustomInitializationCode() {
     val initCodePathProp = "org.os.scala.repl.initcode"
-    val initCodePathDefault = s"${Environment.getHomeDirectory()}/tools/scala/conf/init-code.scala"
+    val initCodePathDefault = s"${getBaseDirectory}/init-code.scala"
     runCustomCode(initCodePathProp, initCodePathDefault)
   }
   
   private def runCustomShutdownCode() {
     val shutdownCodePathProp = "org.os.scala.repl.shutdowncode"
-    val shutdownCodePathDefault = s"${Environment.getHomeDirectory()}/tools/scala/conf/shutdown-code.scala"
+    val shutdownCodePathDefault = s"${getBaseDirectory}/shutdown-code.scala"
     runCustomCode(shutdownCodePathProp, shutdownCodePathDefault)
   }
   
@@ -116,6 +115,8 @@ class GigaSpacesScalaReplLoop(in0: Option[BufferedReader],
       }
     }
   }
+
+  protected def getBaseDirectory = s"${Environment.getHomeDirectory()}/tools/scala/conf"
 
   private def isNewInitStyleUsed: Boolean = {
     val newInitStylePathProp = "org.os.scala.repl.newinitstyle"
@@ -150,19 +151,5 @@ object GigaSpacesScalaRepl {
     new GigaSpacesScalaReplLoop process settings
   }
 
-  def run(code: String, sets: Settings = new Settings): String = {
-    // Used during tests. This is implemented in the same way as in ILoop.
-    import java.io.{BufferedReader, StringReader, OutputStreamWriter}
-
-    stringFromStream { ostream =>
-      Console.withOut(ostream) {
-        val input    = new BufferedReader(new StringReader(code))
-        val output   = new JPrintWriter(new OutputStreamWriter(ostream), true)
-        val repl     = new GigaSpacesScalaReplLoop(Some(input), output)
-
-        repl process sets
-      }
-    }
-  }
 }
 
