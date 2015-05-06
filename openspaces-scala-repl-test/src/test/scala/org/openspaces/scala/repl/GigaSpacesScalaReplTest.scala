@@ -8,7 +8,7 @@ import scala.tools.nsc.{GenericRunnerSettings, Properties, Settings}
 
 class GigaSpacesScalaReplTest {
 
-  val prompt = "\nxap> "
+  val prompt = "\nxap>"
 
   @Test
   def emptyRunTest() = {
@@ -38,9 +38,7 @@ class GigaSpacesScalaReplTest {
   def replImportsTest() = {
     val output = replOutputFor("classOf[SpaceDocument]\nclassOf[GigaSpace]")
     val expectedOutput = """res0: Class[com.gigaspaces.document.SpaceDocument] = class com.gigaspaces.document.SpaceDocument
-      |
-      |res1: Class[org.openspaces.core.GigaSpace] = interface org.openspaces.core.GigaSpace
-      |""".stripMargin
+      |res1: Class[org.openspaces.core.GigaSpace] = interface org.openspaces.core.GigaSpace""".stripMargin
     Assert.assertEquals(expectedOutput, output)
   }
 
@@ -53,7 +51,7 @@ class GigaSpacesScalaReplTest {
   }
 
   private def cleanOutput(output: String): String = {
-    output.split(prompt).drop(1).dropRight(1).mkString("\n")
+    output.split(prompt).drop(1).dropRight(1).map(_.trim).mkString("\n")
   }
 
   private def run(code: String, sets: Settings = new Settings): String = {

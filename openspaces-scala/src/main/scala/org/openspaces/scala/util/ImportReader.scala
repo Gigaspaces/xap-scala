@@ -12,13 +12,13 @@ import scala.tools.nsc.interpreter._
  */
 class ImportReader(in: BufferedReader,
                    out: JPrintWriter) extends SimpleReader(in, out, false) {
-  override protected def readOneLine(): String = {
+  override def readOneLine(prompt: String): String = {
     def isImportLine(line: String) = {
       val trimmedLine = line.trim()
       !trimmedLine.isEmpty && !trimmedLine.startsWith("#")
     }
 
-    super.readOneLine() match {
+    super.readOneLine(prompt) match {
       case null => null
       case line => if (isImportLine(line)) "import " + line else line
     }
