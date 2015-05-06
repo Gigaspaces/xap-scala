@@ -22,7 +22,6 @@ import scala.reflect.ClassTag
 import scala.reflect.runtime.universe
 import scala.tools.reflect.ToolBox
 import scala.tools.reflect.ToolBoxError
-import com.gigaspaces.internal.utils.StringUtils
 import scala.util.Properties
 
 /**

@@ -15,7 +15,6 @@ import org.mockito.invocation.InvocationOnMock
 import com.j_spaces.jdbc.parser.grammar.SqlParser
 import java.io.ByteArrayInputStream
 import java.util.Date
-import org.openspaces.scala.core.GigaSpaceMacroPredicateWrapper
 
 /*
   New space needs to be created to properly initiate QueryProcessorConfiguration.

@@ -11,7 +11,6 @@ import org.openspaces.scala.common.ScalaImmutableDataClass1
 import org.openspaces.scala.common.ScalaImmutableDataClassNullValues
 import org.openspaces.scala.common.StartNewGigaSpace
 
-import com.gigaspaces.annotation.pojo.SpaceClass
 import com.gigaspaces.async.AsyncResult
 import com.gigaspaces.client.ChangeModifiers
 import com.gigaspaces.client.ChangeResult

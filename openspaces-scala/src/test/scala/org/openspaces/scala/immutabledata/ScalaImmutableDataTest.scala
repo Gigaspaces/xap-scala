@@ -1,6 +1,5 @@
 package org.openspaces.scala.immutabledata
 
-import com.gigaspaces.client.protective.ProtectiveModeException
 import org.openspaces.core.SpaceMetadataException
 import org.openspaces.scala.common._
 import org.junit.Test
