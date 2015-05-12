@@ -19,6 +19,7 @@
         </dependency>
     </dependencies>
     <build>
+        <sourceDirectory>src/main/scala</sourceDirectory>
         <plugins>
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
@@ -40,14 +41,5 @@
 
 
         <finalName>gs-openspaces-scala-example-common</finalName>
-        <resources>
-            <resource>
-                <!--<directory>src/main/java</directory>-->
-                <directory>src/main/java</directory>
-                <includes>
-                    <include>**/*.xml</include>
-                </includes>
-            </resource>
-        </resources>
     </build>
 </project>

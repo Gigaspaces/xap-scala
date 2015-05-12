@@ -45,7 +45,7 @@ public class Feeder implements InitializingBean, DisposableBean {
     private GigaSpace gigaSpace;
 
     /**
-     * Sets the number of types that will be used to set {@link org.openspaces.example.data.common.Data#setType(Long)}.
+     * Sets the number of types that will be used to set {@link com.gigaspaces.common.Data#setType}
      *
      * <p>The type is used as the routing index for partitioned space. This will affect the distribution of Data
      * objects over a partitioned space.
