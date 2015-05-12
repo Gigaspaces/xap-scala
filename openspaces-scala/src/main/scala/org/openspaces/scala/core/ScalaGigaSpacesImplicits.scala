@@ -33,7 +33,6 @@ import com.gigaspaces.client.ChangeSet
 import com.gigaspaces.client.ChangeModifiers
 import com.gigaspaces.client.ChangeResult
 import java.util.concurrent.Future
-import com.gigaspaces.query.ISpaceQuery
 
 /**
  * A set of implicit classes that enhance various OpenSpaces elements.

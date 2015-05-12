@@ -3,6 +3,9 @@ package org.openspaces.scala.common
 import scala.beans.BeanProperty
 import org.openspaces.scala.core.aliases.annotation._
 
+// The following 2 ScalaDataClasses show that without SpaceClassConstructor is is not possible
+// to construct immutable space objects - class is either mutable or it cannot be written to a space.
+
 case class ScalaDataClass(@SpaceId @BeanProperty var id: String) extends Serializable {
   def this() = this(null)
 }
@@ -12,26 +15,7 @@ case class ScalaDataClass2(@SpaceId @BeanProperty val id: String,
   def this() = this(null, null)
 }
 
-class ScalaDataClass3(@SpaceId id: String, name: String) extends Serializable {
-  def this() = this(null, null)
-
-  private var _id: String = id
-  private var _name: String = name
-
-  def getId() = _id
-  
-  private def setId(id: String) = _id = id
-  
-  def getName() = _name
-  
-  private def setName(name: String) = _name = name
-  
-}
-
-case class ScalaDataClass4(@SpaceId @BeanProperty var id: String,
-                           @BeanProperty var name: String) extends Serializable {
-  def this() = this(null, null)
-}
+// Below are examples of correct scala immutable data classes - all of them use SpaceClassConstructor.
 
 case class ScalaImmutableDataClass1 @SpaceClassConstructor() (
   

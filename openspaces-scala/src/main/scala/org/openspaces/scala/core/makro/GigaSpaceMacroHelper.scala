@@ -16,10 +16,10 @@
 package org.openspaces.scala.core.makro
 
 import scala.annotation.tailrec
-import scala.language.postfixOps 
+import scala.language.postfixOps
+import scala.compat.Platform.EOL
 import com.gigaspaces.client.ChangeSet
 import com.gigaspaces.client.SpaceProxyOperationModifiers
-import com.j_spaces.core.client.SQLQuery
 import com.gigaspaces.async.AsyncFutureListener
 import com.gigaspaces.client.ChangeResult
 
@@ -214,7 +214,7 @@ abstract class GigaSpaceMacroHelper {
       body match {
         case Block(statements, rawExpression) => {
           val (selectProperties, orderByProperties, orderByDirection, groupByProperties) = 
-            processStatements(statements, paramName.encoded)
+            processStatements(statements, paramName.toString)
           processExpression(paramName, 
                             typeName, 
                             rawExpression, 
@@ -227,7 +227,7 @@ abstract class GigaSpaceMacroHelper {
       }
     } catch {
       case e: Throwable => {
-        c.error(c.enclosingPosition, e.getStackTraceString)
+        c.error(c.enclosingPosition, e.getStackTrace.mkString("", EOL, EOL))
         throw e
       }
     }
@@ -242,7 +242,7 @@ abstract class GigaSpaceMacroHelper {
     
     statements map(removeFullyQualifiedPackageNames) foreach { _ match {
       case Select(Apply(Ident(directive), params), subDirective) 
-        if directive.encoded == orderByDirective => {
+        if directive.toString == orderByDirective => {
         if (orderByProperties != null) {
           c.abort(c.enclosingPosition, "cannot place more then 1 orderBy directive")
         }
@@ -254,17 +254,17 @@ abstract class GigaSpaceMacroHelper {
         orderByProperties = extractDirectivePropertyNames(params, paramName, orderByDirective)
       }
       case Apply(Ident(directive), params) => {
-        if (directive.encoded == selectDirective) {
+        if (directive.toString == selectDirective) {
           if (selectProperties != null) {
             c.abort(c.enclosingPosition, "cannot place more then 1 select directive")
           }
           selectProperties = extractDirectivePropertyNames(params, paramName, selectDirective)
-        } else if (directive.encoded == orderByDirective) {
+        } else if (directive.toString == orderByDirective) {
           if (orderByProperties != null) {
             c.abort(c.enclosingPosition, "cannot place more then 1 orderBy directive")
           }
           orderByProperties = extractDirectivePropertyNames(params, paramName, orderByDirective)
-        } else if (directive.encoded == groupByDirective) {
+        } else if (directive.toString == groupByDirective) {
           if (groupByProperties != null) {
             c.abort(c.enclosingPosition, "cannot place more then 1 groupBy directive")
           }
@@ -307,7 +307,7 @@ abstract class GigaSpaceMacroHelper {
     // build query and parameter list to build new SQLQuery
     val paramsBuffer = collection.mutable.ArrayBuffer[Tree]()
     val query: String = {
-      val initialQuery = visitExpressionTree(true, paramName.decoded, expression, paramsBuffer).query
+      val initialQuery = visitExpressionTree(true, paramName.toString, expression, paramsBuffer).query
       addDirectivesToQueryIfNeeded(initialQuery, orderByProperties, orderByDirection, groupByProperties)
     }
     val params = paramsBuffer.map(box) toList
@@ -343,12 +343,12 @@ abstract class GigaSpaceMacroHelper {
         super.transform(t) match {
           // for directives in statements 
           case Apply(Select(Select(_, macroDirectiveNameTypeName), directive), params) 
-            if macroDirectiveNameTypeName.decoded == "MacroDirectives" => {
+            if macroDirectiveNameTypeName.toString == "MacroDirectives" => {
               Apply(Ident(directive), params)
           }
           // for implicits in final final expression
           case Apply(Select(Apply(Select(Select(_,gigaSpaceImplicitsTypeName), _), lhs::Nil), operator), rhs::Nil) 
-            if gigaSpaceImplicitsTypeName.decoded == "ScalaGigaSpacesImplicits" => {
+            if gigaSpaceImplicitsTypeName.toString == "ScalaGigaSpacesImplicits" => {
               Apply(Select(lhs, operator), rhs::Nil)
           }
           case other => other
@@ -358,8 +358,8 @@ abstract class GigaSpaceMacroHelper {
     implicitRemoverTransformer.transform(apply)
   }
   
-  private def toStringTree(string: String): c.Tree = c.literal(string).tree
-  
+  private def toStringTree(string: String): c.Tree = q"$string"
+
   private def createPartialSqlQueryTree(
       typeNameStringTree: c.Tree, 
       queryStringTree: c.Tree,
@@ -416,12 +416,12 @@ abstract class GigaSpaceMacroHelper {
             val applyParams = Apply(typeApply, params)
             Apply(select, typeName::query::applyParams::Nil)
           }
-          case Ident(name) if name.decoded == "AnyRef" => {
+          case Ident(name) if name.toString == "AnyRef" => {
             createTreeFromTypeName(typeName)
           }
           case Apply(Select(select, methodCall), Literal(Constant(null))::Nil) 
-            if methodCall.encoded == "setProjections" => {
-            val selectParamsTree = selectParams map { selectParam => c.literal(selectParam).tree }
+            if methodCall.toString == "setProjections" => {
+            val selectParamsTree = selectParams map { selectParam => q"$selectParam" }
             Apply(Select(select, methodCall), selectParamsTree)
           }
           case other => other
@@ -434,23 +434,23 @@ abstract class GigaSpaceMacroHelper {
   private def createTreeFromTypeName(typeName: String) = {
     @tailrec
     def helper(currentTree: Tree, names: List[String]): Tree = {
-      names match {
-        case last::Nil => Select(currentTree, newTypeName(last))
-        case first::rest => helper(Select(currentTree, newTermName(first)), rest)
+      (names: @unchecked) match {
+        case last::Nil => Select(currentTree, TypeName(last))
+        case first::rest => helper(Select(currentTree, TermName(first)), rest)
       }
     }
     val splitName = typeName.split('.')
     if (splitName.length == 1) {
-      Ident(newTypeName(typeName))
+      Ident(TypeName(typeName))
     } else {
         val names = splitName.toList
-        helper(Ident(newTermName(names.head)), names.tail)
+        helper(Ident(TermName(names.head)), names.tail)
     }
   }
   
   protected def createFinalInvocationTree(sqlQueryTree: c.Tree): c.Tree = {
     val c.Expr(gigaSpaceTree) = reify { c.prefix.splice.gigaSpace }
-    Apply(Select(gigaSpaceTree, newTermName(getInvocationMethodName)), getInvocationParams(sqlQueryTree))
+    Apply(Select(gigaSpaceTree, TermName(getInvocationMethodName)), getInvocationParams(sqlQueryTree))
   }
   
   case class VisitResult(query: String, isLeaf: Boolean)
@@ -517,9 +517,9 @@ abstract class GigaSpaceMacroHelper {
   }
   
   private def box(t: c.Tree): c.Tree = {
-    Apply(Select(Select(Select(Select(Select(Ident(newTermName("org")), 
-         newTermName("openspaces")), newTermName("core")), 
-         newTermName("util")), newTermName("Boxer")), newTermName("box")), List(t))
+    Apply(Select(Select(Select(Select(Select(Ident(TermName("org")),
+         TermName("openspaces")), TermName("core")),
+         TermName("util")), TermName("Boxer")), TermName("box")), List(t))
   }
   
   private def convertToSqlOperator(treeOperator: Name): Option[String] = {

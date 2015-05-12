@@ -1,6 +1,5 @@
 package org.openspaces.scala.core.makro
 
-import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.openspaces.core.GigaSpace
 import org.openspaces.scala.core.ScalaGigaSpacesImplicits._

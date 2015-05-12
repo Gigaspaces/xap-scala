@@ -15,11 +15,10 @@
  */
 package org.openspaces.scala.repl
 
-import scala.tools.nsc.Properties
-import scala.tools.nsc.Settings
-import scala.tools.nsc.interpreter.ILoop
-import java.io.File
-import org.openspaces.scala.util.Utils
+import scala.tools.nsc.{GenericRunnerSettings, Properties, Settings}
+import scala.tools.nsc.interpreter._
+import java.io.{BufferedReader, File}
+import org.openspaces.scala.util.{ImportReader, Utils}
 import com.j_spaces.kernel.Environment
 
 /**
@@ -28,10 +27,20 @@ import com.j_spaces.kernel.Environment
  * @since 9.6
  * @author Dan Kilman
  */
-class GigaSpacesScalaReplLoop extends ILoop {
-  
+class GigaSpacesScalaReplLoop(in0: Option[BufferedReader],
+                              override protected val out: JPrintWriter) extends ILoop(in0, out) {
+
+  def this() = this(None, new JPrintWriter(Console.out, true))
+
+  val newInitStyle = isNewInitStyleUsed
+
+  val initCodePathProp = "org.os.scala.repl.initcode"
+
   override def process(settings: Settings): Boolean = {
     echo("Initializing... This may take a few seconds.")
+    if (newInitStyle) {
+      setInitScript()
+    }
     super.process(settings)
   }
   
@@ -51,39 +60,50 @@ class GigaSpacesScalaReplLoop extends ILoop {
     echo(welcomeMsg)
   }
   
-  override def prompt = "\nxap> " 
-    
-  override def postInitialization() {
-    super.postInitialization()
-    addCustomImports()
-    runCustomInitializationCode()
+  override def prompt = "\nxap> "
+
+  override def loadFiles(settings: Settings) {
+    super.loadFiles(settings)
+    if (!newInitStyle) {
+      addCustomImports()
+      runCustomInitializationCode()
+    }
   }
   
   private def addCustomImports() {
-    val importsPathProp = "org.os.scala.repl.imports"
-    val importsPathDefault = s"${Environment.getHomeDirectory()}/tools/scala/conf/repl-imports.conf"
-    val importsFile = new File(Properties.propOrElse(importsPathProp, importsPathDefault))
-    if (importsFile.isFile()) {
-      Utils.withCloseable(io.Source.fromFile(importsFile)) { imports =>
-        imports.getLines().foreach { imp => 
-          if (!imp.trim().isEmpty() && !imp.startsWith("#")) {
-            intp.quietImport(imp.trim()) 
+    // This way of running imports ensures the import code will be run after interpreter is fully initialized.
+    // Further code executions can be run using intp.quiteRun method.
+    def run() = {
+      val importsPathProp = "org.os.scala.repl.imports"
+      val importsPathDefault = s"${getBaseDirectory}/repl-imports.conf"
+      val importsPath = Properties.propOrElse(importsPathProp, importsPathDefault)
+      withFile(importsPath) { file =>
+        savingReader {
+          savingReplayStack {
+            file applyReader { reader =>
+              in = new ImportReader(reader, out)
+              loop()
+            }
           }
         }
       }
+    }
+
+    intp.beQuietDuring {
+      run()
     }
   }
   
   private def runCustomInitializationCode() {
     val initCodePathProp = "org.os.scala.repl.initcode"
-    val initCodePathDefault = s"${Environment.getHomeDirectory()}/tools/scala/conf/init-code.scala"
-    runCustomCode(initCodePathProp, initCodePathDefault)    
+    val initCodePathDefault = s"${getBaseDirectory}/init-code.scala"
+    runCustomCode(initCodePathProp, initCodePathDefault)
   }
   
   private def runCustomShutdownCode() {
     val shutdownCodePathProp = "org.os.scala.repl.shutdowncode"
-    val shutdownCodePathDefault = s"${Environment.getHomeDirectory()}/tools/scala/conf/shutdown-code.scala"
-    runCustomCode(shutdownCodePathProp, shutdownCodePathDefault)    
+    val shutdownCodePathDefault = s"${getBaseDirectory}/shutdown-code.scala"
+    runCustomCode(shutdownCodePathProp, shutdownCodePathDefault)
   }
   
   private def runCustomCode(propPath: String, defaultPath: String) {
@@ -93,7 +113,23 @@ class GigaSpacesScalaReplLoop extends ILoop {
         val code = codeSource.getLines.mkString(Properties.lineSeparator)
         intp.quietRun(code)
       }
-    }     
+    }
+  }
+
+  protected def getBaseDirectory = s"${Environment.getHomeDirectory()}/tools/scala/conf"
+
+  private def isNewInitStyleUsed: Boolean = {
+    val newInitStylePathProp = "org.os.scala.repl.newinitstyle"
+    Properties.propOrFalse(newInitStylePathProp)
+  }
+
+  private def setInitScript() = {
+    val initCodePathDefault = s"${Environment.getHomeDirectory()}/tools/scala/conf/new-init-code.scala"
+    val initCodePath = Properties.propOrElse(initCodePathProp, initCodePathDefault)
+    val initFile = new File(initCodePath)
+    if (initFile.isFile) {
+      new sys.SystemProperties += ("scala.repl.autoruncode" -> initCodePath)
+    }
   }
   
 }
@@ -107,8 +143,13 @@ class GigaSpacesScalaReplLoop extends ILoop {
 object GigaSpacesScalaRepl {
   
   def main(args: Array[String]) {
-    new GigaSpacesScalaReplLoop process(args)
+    val settings = new GenericRunnerSettings(Console.println)
+    val defaultArgs = List("-usejavacp")
+    val processAll = true
+    settings.processArguments(defaultArgs ++ args.iterator.toList, processAll)
+
+    new GigaSpacesScalaReplLoop process settings
   }
-  
+
 }
 

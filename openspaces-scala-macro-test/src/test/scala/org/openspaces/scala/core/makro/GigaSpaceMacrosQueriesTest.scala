@@ -2,11 +2,12 @@ package org.openspaces.scala.core.makro
 
 import org.mockito.Matchers._
 import org.mockito.Mockito._
-import org.openspaces.core.GigaSpace
+import org.openspaces.core.{GigaSpaceConfigurer, GigaSpace}
+import org.openspaces.core.space.UrlSpaceConfigurer
 import org.openspaces.scala.core.ScalaGigaSpacesImplicits._
 import org.openspaces.scala.core.MacroDirectives._
 import com.j_spaces.core.client.SQLQuery
-import org.junit.Test
+import org.junit._
 import com.gigaspaces.query.QueryResultType
 import com.gigaspaces.query.ISpaceQuery
 import org.mockito.stubbing.Answer
@@ -14,8 +15,31 @@ import org.mockito.invocation.InvocationOnMock
 import com.j_spaces.jdbc.parser.grammar.SqlParser
 import java.io.ByteArrayInputStream
 import java.util.Date
-import org.junit.Assert
-import org.openspaces.scala.core.GigaSpaceMacroPredicateWrapper
+
+/*
+  New space needs to be created to properly initiate QueryProcessorConfiguration.
+  Otherwise mocked space will not initiate configuration and
+  a default one (containing bug in Java >= 1.8) will be used
+  and further tests accessing space will fail (in Java >= 1.8).
+ */
+object GigaSpaceMacrosQueriesTest {
+
+  var configurer: UrlSpaceConfigurer = _
+  var gigaSpace: GigaSpace = _
+
+  @BeforeClass
+  def beforeClass() {
+    configurer = new UrlSpaceConfigurer("/./testSpace")
+    gigaSpace = new GigaSpaceConfigurer(configurer).create()
+  }
+
+  @AfterClass
+  def afterClass() {
+    if (configurer != null) {
+      configurer.close()
+    }
+  }
+}
 
 class GigaSpaceMacrosQueriesTest {
 

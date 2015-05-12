@@ -1,14 +1,9 @@
 package org.openspaces.scala.immutabledata
 
-import org.openspaces.scala.common.StartNewGigaSpace
+import org.openspaces.core.SpaceMetadataException
+import org.openspaces.scala.common._
 import org.junit.Test
-import org.openspaces.scala.common.ScalaImmutableDataClass1
-import org.openspaces.scala.common.ScalaImmutableDataClass1
 import org.junit.Assert
-import org.openspaces.scala.common.ScalaImmutableDataClassDefaultValues
-import org.openspaces.scala.common.ScalaImmutableDataClassNullValues
-import org.openspaces.scala.common.ScalaImmutableDataClassExcludedProperties
-import org.openspaces.scala.common.ScalaImmutableDataClassInheritanceChild1
 
 class ScalaImmutableDataTest extends StartNewGigaSpace {
 
@@ -56,5 +51,19 @@ class ScalaImmutableDataTest extends StartNewGigaSpace {
     val read = gigaSpace.read(template)
     Assert.assertEquals(written, read)
   }
-  
+
+  @Test
+  def testInvalidImmutables() = {
+    val written = ScalaDataClass("id1")
+    val newId = "newId"
+    written.id = newId
+    Assert.assertEquals(newId, written.id)
+  }
+
+  @Test(expected = classOf[SpaceMetadataException])
+  def testIncorrectImmutable() {
+    val written = ScalaDataClass2("id2", "ScalaDataClass2")
+    gigaSpace.write(written)
+  }
+
 }

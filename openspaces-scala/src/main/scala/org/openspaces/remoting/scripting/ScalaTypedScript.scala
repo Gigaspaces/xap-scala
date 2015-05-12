@@ -25,7 +25,6 @@ import com.gigaspaces.internal.io.IOUtils
 import com.gigaspaces.internal.utils.ObjectUtils
 import com.j_spaces.kernel.ClassLoaderHelper
 import org.openspaces.remoting.RemoteResultReducer
-import scala.annotation.varargs
 
 /**
  * A trait that is included in all scala based typed scripts.
