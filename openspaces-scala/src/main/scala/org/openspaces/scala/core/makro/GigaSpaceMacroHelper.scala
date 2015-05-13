@@ -22,6 +22,7 @@ import com.gigaspaces.client.ChangeSet
 import com.gigaspaces.client.SpaceProxyOperationModifiers
 import com.gigaspaces.async.AsyncFutureListener
 import com.gigaspaces.client.ChangeResult
+import com.j_spaces.core.client.SQLQuery
 
 /**
  * @since 9.6
@@ -170,12 +171,8 @@ abstract class AsyncChangeMacroHelper[T] extends GigaSpaceMacroHelper {
  * @author Dan Kilman
  */
 object GigaSpaceMacroHelper {
-  def createQuery[T](typeName: String, query: String, params: List[Object]) = {
-    SQLQueryMacroHelper.newQuery[T](typeName, 
-                                    query, 
-                                    com.gigaspaces.query.QueryResultType.OBJECT, 
-                                    params.toArray[Object])
-  }
+  def createQuery[T](typeName: String, query: String, params: List[Object]) =
+    new SQLQuery[T](typeName, query, com.gigaspaces.query.QueryResultType.OBJECT, params:_*)
 }
 
 /**
