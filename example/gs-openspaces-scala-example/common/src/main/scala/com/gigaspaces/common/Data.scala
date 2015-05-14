@@ -9,42 +9,24 @@ case class Data (
   @BeanProperty @SpaceRouting @SpaceProperty(nullValue = "-1") var `type`: Long = -1,
   @BeanProperty var rawData: String = null,
   @BeanProperty var data: String = null,
-  @BooleanBeanProperty var processed: Boolean = false) extends scala.Serializable {
+  @BooleanBeanProperty var processed: Boolean = false,
+  @BooleanBeanProperty var verified: Boolean = false) {
 
-  def this() = this(null, -1, null, null, false)
+  def this(`type`: Long, rawData: String) = this(null, `type`, rawData, null, false, false)
 
-  def this(`type`: Long, rawData: String) = this(null, `type`, rawData, null, false)
+  def this() = this(-1, null)
 
-  override def toString: String = {
-    return "id[" + id + "] type[" + `type` + "] rawData[" + rawData + "] data[" + data + "] processed[" + processed + "]"
-  }
+  override def toString: String = s"id[${id}] type[${`type`}] rawData[${rawData}] data[${data}] processed[${processed}] verified[${verified}]"
 }
 
 
-
-
-case class ImmutableData @SpaceClassConstructor() (
+case class Verification @SpaceClassConstructor() (
   @BeanProperty
-  @SpaceId(autoGenerate = true)
-  id: String = null,
+  @SpaceId
+  id: String,
 
   @BeanProperty
-  @SpaceRouting
-  @SpaceProperty(nullValue = "-1")
-  `type`: Long = -1,
+  dataId: String) extends scala.Serializable {
 
-  @BeanProperty
-  rawData: String = null,
-
-  @BeanProperty
-  data: String = null,
-
-  @BooleanBeanProperty
-  processed: Boolean = false) extends scala.Serializable {
-
-  def this(`type`: Long, rawData: String) = this(null, `type`, rawData, null, false)
-
-  override def toString: String = {
-    return "id[" + id + "] type[" + `type` + "] rawData[" + rawData + "] data[" + data + "] processed[" + processed + "]"
-  }
+  override def toString: String = s"id[$id] dataId[$dataId]"
 }

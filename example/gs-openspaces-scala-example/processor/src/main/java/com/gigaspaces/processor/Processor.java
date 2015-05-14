@@ -13,7 +13,7 @@ import java.util.logging.Logger;
  */
 public class Processor {
 
-    Logger log= Logger.getLogger(this.getClass().getName());
+    Logger log = Logger.getLogger(this.getClass().getName());
 
     private long workDuration = 100;
 
@@ -41,6 +41,7 @@ public class Processor {
         data.setProcessed(true);
         data.setData("PROCESSED : " + data.getRawData());
         log.info(" ------ PROCESSED : " + data);
+
         return data;
     }
 

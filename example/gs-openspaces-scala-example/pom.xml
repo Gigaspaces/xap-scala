@@ -22,13 +22,13 @@
 		<gsVersion>10.0.1-11800-RELEASE</gsVersion>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<scala.version>2.11.6</scala.version>
-		<!--<scalaVersion>2.11.6</scalaVersion>-->
 		<scalaBinaryVersion>2.11</scalaBinaryVersion>
 	</properties>
 	<modules>
 		<module>common</module>
 		<module>processor</module>
 		<module>feeder</module>
+		<module>verifier</module>
 	</modules>
 	<dependencies>
 		<dependency>
