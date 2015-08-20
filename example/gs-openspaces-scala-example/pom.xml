@@ -6,6 +6,14 @@
 	<version>1.0-SNAPSHOT</version>
 	<name>gs-openspaces-scala-example</name>
 	<packaging>pom</packaging>
+	
+	<parent>
+		<groupId>com.gigaspaces</groupId>
+		<artifactId>gs-openspaces-scala-parent</artifactId>
+		<version>11.0.0-SNAPSHOT</version>
+		<relativePath>../..</relativePath>
+	</parent>
+	
 	<repositories>
 	    <repository>
 	      <id>org.openspaces</id>
