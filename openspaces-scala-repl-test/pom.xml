@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.gigaspaces</groupId>
         <artifactId>gs-openspaces-scala-parent</artifactId>
-        <version>10.2.0-SNAPSHOT</version>
+        <version>10.2.0-13820-RELEASE</version>
         <relativePath>..</relativePath>
     </parent>
 
