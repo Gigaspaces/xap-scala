@@ -55,14 +55,6 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
 		</dependency>
-
-		<dependency>
-			<groupId>serviceui</groupId>
-			<artifactId>serviceui</artifactId>
-			<version>1.1a</version>
-			<scope>test</scope>
-		</dependency>
-
 	</dependencies>
 
 	<build>
