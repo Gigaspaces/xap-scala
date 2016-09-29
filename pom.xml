@@ -19,14 +19,14 @@
 	
 	<repositories>
 		<repository>
-			<id>scala-tools.org</id>
-			<name>Scala-Tools Maven2 Repository</name>
-			<url>http://oss.sonatype.org/content/groups/scala-tools</url>
-		</repository>
-		<repository>
 			<id>org.openspaces</id>
 			<name>OpenSpaces</name>
 			<url>http://maven-repository.openspaces.org</url>
+		</repository>
+		<repository>
+			<id>scala-tools.org</id>
+			<name>Scala-Tools Maven2 Repository</name>
+			<url>http://oss.sonatype.org/content/groups/scala-tools</url>
 		</repository>
 	</repositories>
 	
